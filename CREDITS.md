@@ -3,7 +3,7 @@
 ## 3B varlıklar
 - **Kenney Furniture Kit** — https://kenney.nl/assets/furniture-kit — CC0 1.0.
   Kullanılan modeller: `cardboardBoxClosed`, `cardboardBoxOpen`, `ceilingFan`, `pottedPlant`, `trashcan`.
-  Modeller `assets/models.js` içinde base64 GLB olarak gömülüdür.
+  Modeller `index.html` içine base64 GLB olarak gömülüdür; ayrı dosya gerekmez.
 
 ## Kütüphaneler
 - **Three.js r186** — https://threejs.org — MIT. CDN üzerinden yüklenir; çevrimdışıysa 3B kapanır, 2B panel çalışmaya devam eder.
