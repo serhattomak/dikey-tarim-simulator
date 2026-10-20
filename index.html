@@ -198,6 +198,37 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#f7f3e8;font-size:12px;padding:8px 14px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:60}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* simulation */
+  .sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:14px;align-items:start}
+  .sim-stage{position:relative;height:min(66vh,600px);min-height:430px;border-radius:14px;overflow:hidden;background:#171a15;border:1px solid #262b23}
+  .sim-stage canvas{display:block;width:100%;height:100%}
+  .sim-hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;max-width:calc(100% - 24px)}
+  .sim-chip{background:rgba(18,22,17,.78);border:1px solid rgba(255,255,255,.13);color:#e8eee2;padding:6px 9px;border-radius:8px;font-size:11px;line-height:1.25}
+  .sim-chip b{display:block;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:#f4f7ef}
+  .sim-chip span{display:block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#a9b3a2}
+  .sim-toolbar{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .sim-btn{font:inherit;font-size:11.5px;background:rgba(18,22,17,.82);color:#e8eee2;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:6px 9px;cursor:pointer}
+  .sim-btn:hover{background:rgba(38,46,34,.92)}
+  .sim-btn.on{background:#6fa87e;border-color:#6fa87e;color:#0e140d;font-weight:600}
+  .sim-cams{position:absolute;right:12px;top:12px;display:flex;gap:5px}
+  .sim-cams .sim-btn{font-size:10.5px;padding:5px 7px}
+  .sim-pick{position:absolute;right:12px;bottom:12px;max-width:250px;background:rgba(18,22,17,.92);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:10px 12px;color:#e8eee2;font-size:11.5px;line-height:1.5}
+  .sim-pick b{display:block;font-size:12.5px;margin-bottom:2px}
+  .sim-pick button{position:absolute;right:6px;top:4px;background:none;border:0;color:#a9b3a2;cursor:pointer;font-size:14px;line-height:1}
+  .sim-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#cfd7c8;padding:28px;background:#171a15}
+  .sim-fallback[hidden]{display:none}
+  .sim-side{display:flex;flex-direction:column;gap:12px}
+  .sparks{display:grid;grid-template-columns:1fr;gap:8px}
+  .spark{background:var(--surface2);border-radius:8px;padding:8px 9px}
+  .spark .h{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:var(--muted)}
+  .spark .h b{font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .spark svg{display:block;width:100%;height:38px;margin-top:3px}
+  .log{display:flex;flex-direction:column;max-height:250px;overflow:auto}
+  .log div{display:grid;grid-template-columns:44px 1fr;gap:8px;font-size:11.5px;padding:6px 0;border-bottom:1px dotted var(--line)}
+  .log div:last-child{border-bottom:0}
+  .log .d{color:var(--muted);font-variant-numeric:tabular-nums}
+  .log .warn{color:var(--amber)}
+
   footer{border-top:1px solid var(--line);background:var(--surface);padding:16px 0 26px;margin-top:8px}
   footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 
@@ -213,6 +244,8 @@
     .grid3{grid-template-columns:minmax(0,1fr)}
     .vpd-grid{grid-template-columns:minmax(0,1fr)}
     .unit-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .sim-wrap{grid-template-columns:minmax(0,1fr)}
+    .sim-stage{height:450px;min-height:380px}
   }
   @media (max-width:900px){
     .workspace{grid-template-columns:minmax(0,1fr);padding-top:12px}
@@ -230,6 +263,10 @@
     .bar-row{grid-template-columns:92px minmax(0,1fr) 64px}
     .tor-row{grid-template-columns:92px minmax(0,1fr) 82px}
     .unit-grid{grid-template-columns:1fr}
+    .sim-stage{height:380px;min-height:320px}
+    .sim-chip b{font-size:12.5px}
+    .sim-chip span{font-size:8.5px}
+    .sim-chip{padding:5px 7px}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -276,7 +313,8 @@
   </aside>
 
   <main class="main">
-    <section class="panel" data-panel="ozet"></section>
+    <section class="panel" data-panel="sim"></section>
+    <section class="panel" data-panel="ozet" hidden></section>
     <section class="panel" data-panel="fizik" hidden></section>
     <section class="panel" data-panel="enerji" hidden></section>
     <section class="panel" data-panel="ekonomi" hidden></section>
@@ -295,6 +333,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="assets/models.js"></script>
 <script>
 /* ============================================================
    VERİ
@@ -658,7 +697,7 @@ function compute(s){
    DURUM
    ============================================================ */
 let state = deep(DEFAULT);
-let activeTab = 'ozet';
+let activeTab = 'sim';
 let compareSlots = {A:null, B:null};
 
 function cropDefaults(s, key){
@@ -1231,7 +1270,7 @@ const FIELD_MAP = {};
 GROUPS.forEach(g => g.fields.forEach(f => { FIELD_MAP[f.k] = f; }));
 const idOf = k => k.replace(/\./g,'-');
 const TABS = [
-  ['ozet','Özet'],['fizik','Işık & iklim'],['enerji','Enerji'],['ekonomi','Ekonomi'],
+  ['sim','Simülasyon'],['ozet','Özet'],['fizik','Işık & iklim'],['enerji','Enerji'],['ekonomi','Ekonomi'],
   ['risk','Risk'],['kiyas','Kıyaslama'],['notlar','Model notları']
 ];
 
@@ -1546,11 +1585,237 @@ function renderFizik(m){
 }
 
 /* ============================================================
+   SİMÜLASYON MOTORU (günlük koşu)
+   ============================================================ */
+const SIM = {
+  day:0, running:false, speed:1, cash:0, kwh:0, harvestKg:0, harvests:0,
+  log:[], hist:[], done:false, sig:'', uiDirty:false
+};
+let simAcc=0, simFallbackTimer=null;
+
+function simSig(){
+  return [state.crop, state.footprintM2, state.tiers, state.system].join('|');
+}
+function addLog(text, tone=''){
+  SIM.log.push({d: SIM.day, text, tone});
+  if (SIM.log.length>200) SIM.log.shift();
+  SIM.uiDirty = true;
+}
+function resetSim(announce=true){
+  const had = SIM.day>0;
+  SIM.day=0; SIM.running=false; SIM.cash=0; SIM.kwh=0; SIM.harvestKg=0;
+  SIM.harvests=0; SIM.log=[]; SIM.hist=[]; SIM.done=false; SIM.sig=simSig();
+  addLog('Simülasyon hazır. “Oynat” ile 120 günlük koşuyu başlat.');
+  if (announce && had) addLog('Parametre değişti; sayaç sıfırlandı.');
+  if (window.DT3D) window.DT3D.setDay(0);
+  updateSimUI();
+}
+function stepDay(){
+  const m = window.__model || compute(state);
+  SIM.day++;
+  SIM.cash += (m.revenue - m.opexTotal)/365;
+  SIM.kwh += m.kwhDay;
+  const cycle = Math.max(1, Math.round(state.cycleDays));
+  if (SIM.day % cycle === 0){
+    const kg = m.netProdKg / (365/state.cycleDays);
+    SIM.harvestKg += kg;
+    SIM.harvests++;
+    addLog(`Hasat: ~${nf(kg,0)} kg ${m.crop.name}`);
+  }
+  if (SIM.day === 1){
+    addLog(`Ekim tamam. Haftalık kapasite ~${nf(m.traysWeek,0)} tepsi.`);
+    if (m.kwhPerKg > 12) addLog(`Uyarı: enerji yoğunluğu ${nf(m.kwhPerKg,1)} kWh/kg. Hedef 8’in altı.`, 'warn');
+    if (state.waterTempC > 22) addLog(`Uyarı: su ${nf(state.waterTempC,0)} °C. Pythium eşiği 22 °C.`, 'warn');
+  }
+  if (SIM.day % 30 === 0){
+    addLog(`30 gün özeti: kasa ${fmtCompact(SIM.cash)}, hasat ${nf(SIM.harvestKg,0)} kg.`, 'info');
+  }
+  SIM.hist.push({d:SIM.day, cash:SIM.cash, kg:SIM.harvestKg, kwh:SIM.kwh});
+  if (SIM.hist.length > 400) SIM.hist.shift();
+  if (window.DT3D) window.DT3D.setDay(SIM.day);
+  if (SIM.day >= 120){
+    SIM.running = false; SIM.done = true;
+    addLog('120 gün tamamlandı. Sonucu Ekonomi sekmesinde incele.', 'info');
+  }
+  SIM.uiDirty = true;
+}
+function toggleSim(){
+  if (SIM.done) return;
+  SIM.running = !SIM.running;
+  if (SIM.running && SIM.day === 0) addLog('Koşu başladı. Işıklar yanıyor, tepsiler büyüyor.');
+  updateSimUI();
+}
+function sparkSvg(values, color){
+  if (values.length < 2) return '<svg viewBox="0 0 240 40"></svg>';
+  const W=240,H=40,P=3;
+  const min=Math.min(...values), max=Math.max(...values), span=(max-min)||1;
+  const x=i=>P+i*(W-2*P)/(values.length-1);
+  const y=v=>H-P-((v-min)/span)*(H-2*P);
+  const d=values.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="zaman serisi">
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.8" vector-effect="non-scaling-stroke"/>
+  </svg>`;
+}
+function simChip(label, val){
+  return `<div class="sim-chip"><span>${label}</span><b>${val}</b></div>`;
+}
+function updateSimUI(){
+  const hud = document.getElementById('sim-hud');
+  if (!hud) return;
+  hud.innerHTML =
+    simChip('Gün', SIM.day+'/120') +
+    simChip('Kasa', fmtCompact(SIM.cash)) +
+    simChip('Hasat', nf(SIM.harvestKg,0)+' kg') +
+    simChip('Enerji', nf(SIM.kwh,0)+' kWh');
+  const prog = document.getElementById('sim-progress');
+  if (prog) prog.style.width = Math.min(100, SIM.day/120*100)+'%';
+  const stateEl = document.getElementById('sim-state');
+  if (stateEl) stateEl.textContent = SIM.done ? 'tamamlandı' : SIM.running ? 'çalışıyor' : SIM.day>0 ? 'duraklatıldı' : 'hazır';
+  const totals = document.getElementById('sim-totals');
+  if (totals){
+    const m = window.__model || compute(state);
+    totals.innerHTML = `
+      <tr><td>Koşu</td><td class="r">${SIM.day} / 120 gün</td></tr>
+      <tr><td>Kümülatif nakit</td><td class="r ${SIM.cash<0?'neg-text':'pos-text'}">${fmtCompact(SIM.cash)}</td></tr>
+      <tr><td>Hasat</td><td class="r">${nf(SIM.harvestKg,0)} kg</td></tr>
+      <tr><td>Elektrik</td><td class="r">${nf(SIM.kwh,0)} kWh</td></tr>
+      <tr><td>Hasat sayısı</td><td class="r">${SIM.harvests}</td></tr>
+      <tr><td>Günlük üretim</td><td class="r">${nf(m.netProdKg/365,1)} kg</td></tr>`;
+  }
+  const sparks = document.getElementById('sim-sparks');
+  if (sparks){
+    const h = SIM.hist;
+    const last = h.length ? h[h.length-1] : {cash:0, kg:0, kwh:0};
+    sparks.innerHTML = `
+      <div class="spark"><div class="h"><span>Kümülatif nakit</span><b class="${last.cash<0?'neg-text':'pos-text'}">${fmtCompact(last.cash)}</b></div>${sparkSvg(h.map(x=>x.cash), last.cash<0?'#b0564a':'#2c5f3e')}</div>
+      <div class="spark"><div class="h"><span>Kümülatif hasat</span><b>${nf(last.kg,0)} kg</b></div>${sparkSvg(h.map(x=>x.kg), '#4a8a5f')}</div>
+      <div class="spark"><div class="h"><span>Kümülatif elektrik</span><b>${nf(last.kwh,0)} kWh</b></div>${sparkSvg(h.map(x=>x.kwh), '#8f6218')}</div>`;
+  }
+  const logEl = document.getElementById('sim-log');
+  if (logEl){
+    logEl.innerHTML = SIM.log.slice(-16).reverse().map(e=>
+      `<div><span class="d">G${e.d}</span><span class="${e.tone==='warn'?'warn':''}">${e.text}</span></div>`
+    ).join('') || '<div><span class="d">—</span><span>Henüz olay yok.</span></div>';
+  }
+  const play = document.getElementById('sim-play');
+  if (play){
+    play.textContent = SIM.done ? 'Bitti' : SIM.running ? '❚❚ Duraklat' : '▶ Oynat';
+    play.classList.toggle('on', SIM.running);
+  }
+  document.querySelectorAll('[data-act="sim-speed"]').forEach(b=>{
+    b.classList.toggle('on', +b.dataset.speed === SIM.speed);
+  });
+}
+function startSimClock(){
+  setInterval(function(){
+    if (SIM.running && !SIM.done){
+      simAcc += SIM.speed*0.2;
+      let guard = 0;
+      while (simAcc >= 1 && guard < 15){ simAcc -= 1; stepDay(); guard++; }
+    }
+    if (SIM.uiDirty){ updateSimUI(); SIM.uiDirty = false; }
+  }, 200);
+}
+
+function renderSim(m){
+  const panel = document.querySelector('[data-panel="sim"]');
+  if (!panel) return;
+  if (!panel.dataset.built){
+    panel.innerHTML = `
+      <div class="sim-wrap">
+        <div class="sim-stage" id="sim-stage">
+          <div id="sim-canvas-wrap" style="position:absolute;inset:0"></div>
+          <div class="sim-hud" id="sim-hud"></div>
+          <div class="sim-cams">
+            <button class="sim-btn" data-act="cam-wide">Geniş</button>
+            <button class="sim-btn" data-act="cam-rack">Raf</button>
+            <button class="sim-btn" data-act="cam-top">Üst</button>
+          </div>
+          <div class="sim-toolbar">
+            <button class="sim-btn" data-act="sim-play" id="sim-play">▶ Oynat</button>
+            <button class="sim-btn" data-act="sim-speed" data-speed="1">1×</button>
+            <button class="sim-btn" data-act="sim-speed" data-speed="7">7×</button>
+            <button class="sim-btn" data-act="sim-speed" data-speed="30">30×</button>
+            <button class="sim-btn" data-act="sim-reset">Sıfırla</button>
+          </div>
+          <div class="sim-pick" id="sim-pick" hidden></div>
+          <div class="sim-fallback" id="sim-fallback" hidden>
+            <div>
+              <b style="font-size:14px">3D sahne yüklenemedi</b>
+              <p style="margin-top:6px;font-size:12px;color:#a9b3a2;max-width:320px">Three.js CDN’ine ulaşılamadı (çevrimdışı olabilirsiniz). Simülasyon 2D olarak çalışmaya devam ediyor; grafikler ve günlük kayıtlar aşağıda.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="sim-side">
+          <div class="card">
+            <div class="card-head"><h3>Koşu</h3><span class="sub" id="sim-state">hazır</span></div>
+            <div class="meter"><i id="sim-progress" style="width:0%"></i></div>
+            <div class="hint" style="margin:6px 0 8px">120 gün · sahne 5 kata kadar gösterir</div>
+            <table class="tbl"><tbody id="sim-totals"></tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Günlük akış</h3><span class="sub">kümülatif</span></div>
+            <div class="sparks" id="sim-sparks"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Olay günlüğü</h3><span class="sub">son 16</span></div>
+            <div class="log" id="sim-log"></div>
+          </div>
+        </aside>
+      </div>`;
+    panel.dataset.built = '1';
+  }
+  updateSimUI();
+  if (window.DT3D){
+    window.DT3D.sync(state, m);
+  } else if (!simFallbackTimer){
+    simFallbackTimer = setTimeout(()=>{
+      if (!window.DT3D){
+        const fb = document.getElementById('sim-fallback');
+        if (fb){
+          fb.hidden = false;
+          if (window.__dt3dError){
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'margin-top:10px;font-size:9px;color:#8f9b88;max-width:520px;white-space:pre-wrap;text-align:left';
+            pre.textContent = String(window.__dt3dError).split('\n').slice(0,3).join('\n');
+            fb.appendChild(pre);
+          }
+        }
+      }
+    }, 15000);
+  }
+}
+window.DT3D_ONREADY = function(){
+  const wrap = document.getElementById('sim-canvas-wrap');
+  const fb = document.getElementById('sim-fallback');
+  if (fb) fb.hidden = true;
+  if (window.DT3D){
+    if (wrap) window.DT3D.mount(wrap);
+    window.DT3D.sync(state, window.__model || compute(state));
+    window.DT3D.setDay(SIM.day);
+  }
+};
+window.DT = {
+  getState: () => state,
+  compute: () => compute(state),
+  CROPS: CROPS,
+  SYSTEMS: SYSTEMS
+};
+
+/* ============================================================
    RENDER, OLAYLAR, KALICILIK
    ============================================================ */
 function render(){
   const m = compute(state);
+  window.__model = m;
+  const sig = simSig();
+  if (SIM.sig && sig !== SIM.sig){
+    resetSim(false);
+    addLog('Senaryo değişti; sayaç sıfırlandı.');
+  }
+  SIM.sig = sig;
   renderKpis(m);
+  renderSim(m);
   renderOzet(m);
   renderFizik(m);
   renderEnerji(m);
@@ -1560,7 +1825,6 @@ function render(){
   renderNotlar();
   const sel = $('preset');
   if (sel) sel.value = PRESETS[state.preset] ? state.preset : 'custom';
-  window.__model = m;
 }
 
 function buildTabs(){
@@ -1733,6 +1997,16 @@ function bindEvents(){
     if (act === 'saveB'){ snapshotSlot('B'); toast('B senaryosu kaydedildi'); }
     if (act === 'clearCmp'){ compareSlots = {A:null, B:null}; render(); }
     if (act === 'test'){ testResults = selfTest(); render(); toast('Testler çalıştı'); }
+    if (act === 'sim-play') toggleSim();
+    if (act === 'sim-speed'){ SIM.speed = +b.dataset.speed; updateSimUI(); }
+    if (act === 'sim-reset'){ resetSim(false); SIM.running = false; updateSimUI(); }
+    if (act === 'cam-wide' && window.DT3D) window.DT3D.camera('wide');
+    if (act === 'cam-rack' && window.DT3D) window.DT3D.camera('rack');
+    if (act === 'cam-top' && window.DT3D) window.DT3D.camera('top');
+    if (act === 'pick-close'){
+      const p = document.getElementById('sim-pick');
+      if (p) p.hidden = true;
+    }
   });
 }
 
@@ -1745,14 +2019,417 @@ function init(){
   testResults = selfTest();
   bindEvents();
   syncInputs();
+  SIM.sig = simSig();
+  addLog('Simülasyon hazır. “Oynat” ile 120 günlük koşuyu başlat.');
   render();
+  startSimClock();
   if (location.search.includes('test=1')){
     const fails = testResults.filter(t=>!t.ok).length;
     console.log('DT self-test:', fails ? fails+' FAIL' : 'all pass', testResults);
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+init();
+</script>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+(function(){
+  try {
+  const DT = () => window.DT;
+  const nf = (v,d=0)=> new Intl.NumberFormat('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number.isFinite(v)?v:0);
+  const MODELS = window.DT_MODELS || {};
+  const loader = new GLTFLoader();
+
+  let renderer, scene, camera, controls, container, farm, raycaster;
+  let ready=false, day=0, sig='', lastT=0, fanMesh=null, camTween=null;
+  let trayGroups=[], pickables=[];
+  const pointer = new THREE.Vector2();
+  const geoCache = {}, matCache = {};
+  const COL = {floor:0x2b2f26, wall:0x30342c, frame:0x454c41, shelf:0x565f50, tray:0x3a4036};
+
+  const CAMS = {
+    wide:[[4.6,3.4,7.2],[0,1.3,0]],
+    rack:[[2.6,1.7,3.8],[0,1.4,0]],
+    top:[[0.3,8.2,2.6],[0,0.9,0]]
+  };
+
+  function mat(color, opts){
+    const k = color+'|'+JSON.stringify(opts||{});
+    if (!matCache[k]) matCache[k] = new THREE.MeshStandardMaterial(Object.assign({color, roughness:.86, metalness:.04, flatShading:true}, opts||{}));
+    return matCache[k];
+  }
+  function ledMat(){
+    if (!matCache.led) matCache.led = new THREE.MeshStandardMaterial({color:0xfff3d8, emissive:0xffe6b8, emissiveIntensity:2.4, roughness:.4});
+    return matCache.led;
+  }
+  function boxGeo(w,h,d){
+    const k = w+'|'+h+'|'+d;
+    if (!geoCache[k]) geoCache[k] = new THREE.BoxGeometry(w,h,d);
+    return geoCache[k];
+  }
+  function box(w,h,d,material,x,y,z){
+    const m = new THREE.Mesh(boxGeo(w,h,d), material);
+    m.position.set(x,y,z);
+    return m;
+  }
+  function plantAsset(cat){
+    const k = 'plant_'+cat;
+    if (geoCache[k]) return geoCache[k];
+    let geo, color, count;
+    if (cat==='micro'){ geo=new THREE.ConeGeometry(0.011,0.11,4); color=0x67ad50; count=260; }
+    else if (cat==='leafy'){ geo=new THREE.IcosahedronGeometry(0.068,0); geo.scale(1,0.55,1); color=0x6fb45a; count=16; }
+    else if (cat==='herb'){ geo=new THREE.IcosahedronGeometry(0.05,0); geo.scale(1,0.9,1); color=0x58a04a; count=20; }
+    else { geo=new THREE.SphereGeometry(0.058,6,4); geo.scale(1,0.7,1); color=0x43893f; count=6; }
+    const a = {geo, mat:mat(color, {emissive:color, emissiveIntensity:0.14}), count};
+    geoCache[k] = a;
+    return a;
+  }
+  if (!geoCache.berry){
+    geoCache.berry = new THREE.SphereGeometry(0.013,5,4);
+    matCache.berry = mat(0xa8342c);
+  }
+
+  function makePlants(crop, tw, td){
+    const a = plantAsset(crop.category);
+    const g = new THREE.Group();
+    const im = new THREE.InstancedMesh(a.geo, a.mat, a.count);
+    const d = new THREE.Object3D();
+    for (let i=0;i<a.count;i++){
+      const s = 0.72 + Math.random()*0.5;
+      d.position.set((Math.random()-.5)*(tw-0.07), 0.04*s, (Math.random()-.5)*(td-0.05));
+      d.rotation.y = Math.random()*Math.PI*2;
+      d.scale.setScalar(s);
+      d.updateMatrix();
+      im.setMatrixAt(i, d.matrix);
+    }
+    im.instanceMatrix.needsUpdate = true;
+    g.add(im);
+    if (crop.category==='fruit'){
+      const b = new THREE.InstancedMesh(geoCache.berry, matCache.berry, a.count*3);
+      let n=0;
+      for (let i=0;i<a.count;i++){
+        for (let j=0;j<3;j++){
+          d.position.set((Math.random()-.5)*(tw-0.08), 0.055+Math.random()*0.03, (Math.random()-.5)*(td-0.06));
+          d.rotation.y = Math.random()*Math.PI;
+          d.scale.setScalar(1);
+          d.updateMatrix();
+          b.setMatrixAt(n++, d.matrix);
+        }
+      }
+      b.instanceMatrix.needsUpdate = true;
+      g.add(b);
+    }
+    return g;
+  }
+
+  function buildTray(crop, x, y, z, offset, rackNo){
+    const tg = new THREE.Group();
+    tg.position.set(x,y,z);
+    const tray = box(0.56,0.045,0.36, mat(COL.tray), 0,0.022,0);
+    tray.castShadow = true; tray.receiveShadow = true;
+    tray.userData.rack = rackNo;
+    tg.add(tray);
+    const plants = makePlants(crop, 0.56, 0.36);
+    plants.position.y = 0.045;
+    tg.add(plants);
+    tg.userData = {plants, offset, rack:rackNo};
+    tg.traverse(o=>{ if (o.isMesh) o.userData.rack = rackNo; });
+    return tg;
+  }
+
+  function build(){
+    const st = DT().getState();
+    const crop = DT().CROPS[st.crop];
+    if (farm){ scene.remove(farm); }
+    farm = new THREE.Group(); scene.add(farm);
+    trayGroups = []; pickables = [];
+    const racks = Math.max(2, Math.min(4, Math.ceil(st.footprintM2/5)));
+    const tiers = Math.max(1, Math.min(5, st.tiers));
+    const W=1.95, D=0.9, gap=0.42, total=racks*W+(racks-1)*gap;
+    const tierH=0.54, baseH=0.42;
+    const cycle = Math.max(1, Math.round(st.cycleDays));
+    for (let r=0;r<racks;r++){
+      const x = -total/2 + W/2 + r*(W+gap);
+      const rk = new THREE.Group();
+      rk.position.set(x,0,-1.0);
+      rk.userData.rack = r+1;
+      const h = baseH + tiers*tierH;
+      for (const px of [-W/2+0.05, W/2-0.05]){
+        for (const pz of [-D/2+0.05, D/2-0.05]){
+          const post = box(0.055,h,0.055, mat(COL.frame), px, h/2, pz);
+          post.castShadow = true;
+          rk.add(post);
+        }
+      }
+      for (let t=0;t<=tiers;t++){
+        const y = baseH + t*tierH;
+        const sh = box(W,0.045,D, mat(COL.shelf), 0, y, 0);
+        sh.receiveShadow = true;
+        rk.add(sh);
+        if (t<tiers){
+          for (let k=0;k<3;k++){
+            const tg = buildTray(crop, -0.62+k*0.62, y+0.026, 0, (r*13+t*7+k*5)%cycle, r+1);
+            rk.add(tg); trayGroups.push(tg);
+          }
+          const led = box(W-0.16,0.035,0.11, ledMat(), 0, y+tierH-0.075, 0);
+          rk.add(led);
+        }
+      }
+      farm.add(rk); pickables.push(rk);
+    }
+    setDay(day);
+  }
+
+  function setDay(d){
+    day = d;
+    if (!ready) return;
+    const st = DT().getState();
+    const cycle = Math.max(1, Math.round(st.cycleDays));
+    for (const tg of trayGroups){
+      const g = (((d + tg.userData.offset) % cycle) + cycle) % cycle / cycle;
+      const s = 0.2 + 0.8*g;
+      tg.userData.plants.scale.set(0.55+0.45*g, s, 0.55+0.45*g);
+    }
+  }
+
+  function addModel(key, pos, scale, rotY){
+    if (!MODELS[key]) return;
+    try {
+      const b64 = MODELS[key].split(',')[1];
+      const bin = atob(b64);
+      const buf = new Uint8Array(bin.length);
+      for (let i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
+      loader.parse(buf.buffer, '', gltf=>{
+        const g = gltf.scene;
+        g.position.set(pos[0],pos[1],pos[2]);
+        g.scale.setScalar(scale);
+        if (rotY) g.rotation.y = rotY;
+        g.traverse(o=>{ if (o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+        scene.add(g);
+        if (key==='fan') fanMesh = g;
+      }, ()=>{});
+    } catch(e){}
+  }
+
+  function buildRoom(){
+    const floor = box(11,0.1,7.5, mat(COL.floor), 0,-0.05,0);
+    floor.receiveShadow = true;
+    scene.add(floor);
+    scene.add(box(11,3.6,0.1, mat(COL.wall), 0,1.8,-3.75));
+    scene.add(box(0.1,3.6,7.5, mat(COL.wall), -5.5,1.8,0));
+    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(11,7.5), new THREE.MeshStandardMaterial({color:0x2c302a, side:THREE.BackSide, roughness:.95}));
+    ceil.rotation.x = Math.PI/2;
+    ceil.position.set(0,3.6,0);
+    scene.add(ceil);
+    const grid = new THREE.GridHelper(11,22,0x353b31,0x2b3028);
+    grid.position.y = 0.004;
+    grid.material.opacity = 0.25;
+    grid.material.transparent = true;
+    scene.add(grid);
+
+    // paketleme tezgahı
+    const bench = new THREE.Group();
+    bench.position.set(4.15,0,1.95);
+    const top = box(1.75,0.07,0.78, mat(0x6d6a5c), 0,0.86,0);
+    top.castShadow = true; top.receiveShadow = true;
+    bench.add(top);
+    for (const bx of [-0.78,0.78]) for (const bz of [-0.32,0.32]){
+      bench.add(box(0.06,0.83,0.06, mat(0x4a4a42), bx,0.415,bz));
+    }
+    bench.add(box(0.5,0.16,0.36, mat(0x8d8570), -0.35,0.97,0.02));
+    scene.add(bench);
+
+    // su tankı + boru
+    const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.52,1.7,18), mat(0x2e4a5a));
+    tank.position.set(4.75,0.85,-3.05); tank.castShadow=true; scene.add(tank);
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,4.4,8), mat(0x5d6660));
+    pipe.rotation.z = Math.PI/2; pipe.position.set(2.5,1.7,-3.05); scene.add(pipe);
+    const pipe2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.4,8), mat(0x5d6660));
+    pipe2.position.set(0.4,1.7,-3.05); scene.add(pipe2);
+
+    // klima
+    scene.add(box(0.95,0.6,0.22, mat(0xb9b7ac), 3.3,2.45,-3.64));
+    scene.add(box(0.82,0.08,0.02, mat(0x8a938c), 3.3,2.3,-3.52));
+
+    // GLTF props (CC0)
+    addModel('fan', [-3.6,3.4,1.1], 0.62);
+    addModel('box', [3.86,0.9,1.95], 0.9, 0.4);
+    addModel('boxOpen', [4.45,0.9,1.9], 0.9, -0.2);
+    addModel('plant', [-4.85,0,2.3], 1.2, 0.4);
+    addModel('bin', [4.95,0,-1.1], 1.0, 0.3);
+  }
+
+  function resize(){
+    if (!container || !renderer) return;
+    const w = container.clientWidth, h = container.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w,h,false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+
+  function cameraTo(name){
+    const c = CAMS[name];
+    if (!c) return;
+    camTween = {
+      t:0,
+      fromP:camera.position.clone(), toP:new THREE.Vector3(c[0][0],c[0][1],c[0][2]),
+      fromT:controls.target.clone(), toT:new THREE.Vector3(c[1][0],c[1][1],c[1][2])
+    };
+  }
+
+  function showPick(n){
+    const el = document.getElementById('sim-pick');
+    if (!el) return;
+    const st = DT().getState(), m = DT().compute(), crop = DT().CROPS[st.crop];
+    el.innerHTML = `<button data-act="pick-close" aria-label="Kapat">×</button>
+      <b>Raf ${n} · ${crop.name}</b>
+      ${Math.min(5,st.tiers)} kat · 3 tepsi/kat<br>
+      Haftalık kapasite ~${nf(m.traysWeek,0)} tepsi<br>
+      ${nf(m.kgM2Year,1)} kg/m²·yıl · ${nf(m.kwhPerKg,1)} kWh/kg`;
+    el.hidden = false;
+  }
+  function hidePick(){
+    const el = document.getElementById('sim-pick');
+    if (el) el.hidden = true;
+  }
+
+  function init(){
+    renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, window.innerWidth<900?1.25:1.6));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    renderer.shadowMap.enabled = window.innerWidth > 900;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x171a15);
+    scene.fog = new THREE.Fog(0x171a15, 17, 32);
+
+    camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
+    camera.position.set(4.6,3.4,7.2);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0,1.25,0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.enablePan = false;
+    controls.minDistance = 3.2;
+    controls.maxDistance = 19;
+    controls.maxPolarAngle = 1.46;
+    controls.update();
+
+    scene.add(new THREE.HemisphereLight(0xeaf2e2, 0x3c4236, 1.05));
+    const key = new THREE.DirectionalLight(0xfff2dc, 1.8);
+    key.position.set(6,10,7);
+    if (window.innerWidth > 900){
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024,1024);
+      key.shadow.camera.left=-8; key.shadow.camera.right=8;
+      key.shadow.camera.top=8; key.shadow.camera.bottom=-8;
+      key.shadow.camera.near=1; key.shadow.camera.far=26;
+      key.shadow.bias=-0.0005;
+    }
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xbcd7c4, 0.8);
+    fill.position.set(-6,4.5,-4);
+    scene.add(fill);
+    const grow = new THREE.PointLight(0xfff0cf, 30, 12, 2);
+    grow.position.set(0,3.1,0.9);
+    scene.add(grow);
+
+    raycaster = new THREE.Raycaster();
+    renderer.domElement.addEventListener('pointerdown', onDown);
+    renderer.domElement.addEventListener('pointermove', onMove);
+
+    buildRoom();
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(container);
+    window.addEventListener('resize', resize);
+  }
+
+  function onMove(e){
+    if (!renderer) return;
+    renderer.domElement.style.cursor = 'grab';
+  }
+  function onDown(e){
+    if (!ready) return;
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    pointer.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(pickables, true);
+    if (hits.length){
+      let o = hits[0].object;
+      while (o && o.userData.rack === undefined) o = o.parent;
+      if (o) showPick(o.userData.rack);
+    } else hidePick();
+  }
+
+  function frame(t){
+    requestAnimationFrame(frame);
+    if (!ready || !container) return;
+    const dt = Math.min(.05, (t-lastT)/1000 || 0);
+    lastT = t;
+    if (container.offsetWidth === 0) return;
+    if (fanMesh) fanMesh.rotation.y += dt*2.4;
+    if (camTween){
+      camTween.t = Math.min(1, camTween.t + dt*2.4);
+      const e = 1-Math.pow(1-camTween.t,3);
+      camera.position.lerpVectors(camTween.fromP, camTween.toP, e);
+      controls.target.lerpVectors(camTween.fromT, camTween.toT, e);
+      if (camTween.t >= 1) camTween = null;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  function mount(el){
+    if (ready){
+      if (el && renderer.domElement.parentElement !== el){
+        container = el; el.appendChild(renderer.domElement); resize();
+      }
+      return;
+    }
+    if (!el) return;
+    container = el;
+    init();
+    el.appendChild(renderer.domElement);
+    ready = true;
+    resize();
+    build();
+    requestAnimationFrame(frame);
+  }
+
+  function sync(st, m){
+    if (!ready) return;
+    const s = [st.crop, st.footprintM2, st.tiers, st.system].join('|');
+    if (s !== sig){ sig = s; build(); }
+  }
+
+  window.DT3D = {mount, sync, setDay, camera:cameraTo};
+  if (window.DT3D_ONREADY) window.DT3D_ONREADY();
+  } catch(err){
+    window.__dt3dError = String((err && (err.stack || err.message)) || err);
+    console.error('DT3D', err);
+    const fb = document.getElementById('sim-fallback');
+    if (fb){
+      fb.hidden = false;
+      fb.innerHTML = '<div><b style="font-size:14px">3D sahne kurulamadı</b><pre style="margin-top:8px;font-size:10px;color:#a9b3a2;max-width:520px;white-space:pre-wrap;text-align:left">'
+        + String(window.__dt3dError).split('\n').slice(0,4).join('\n') + '</pre></div>';
+    }
+  }
+})();
 </script>
 </body>
 </html>
