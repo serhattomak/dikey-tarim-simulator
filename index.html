@@ -37,6 +37,13 @@
   .brand h1{font-family:var(--serif);font-size:19px;line-height:1.1}
   .brand p{font-size:11.5px;color:var(--muted);margin-top:2px}
   .top-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .mode-switch{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--surface)}
+  .mode-switch button{font:inherit;font-size:11.5px;padding:6px 10px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .mode-switch button+button{border-left:1px solid var(--line2)}
+  .mode-switch button.on{background:var(--green);color:#f7f3e8;font-weight:600}
+  .simple-note{background:var(--green-soft);border:1px solid #cfe0cb;border-radius:10px;padding:10px 11px;font-size:11px;color:var(--green);line-height:1.55;margin-bottom:8px}
+  .simple-note b{display:block;font-size:12px;margin-bottom:2px}
+  .simple-note .btn{margin-top:7px;padding:4px 8px;font-size:10.5px;background:var(--surface);color:var(--green);border-color:#c7dcc4}
   .preset{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
   .preset select{font-size:12.5px;padding:6px 8px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);max-width:190px}
   .btn{font:inherit;font-size:12.5px;padding:7px 11px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:8px;cursor:pointer;white-space:nowrap}
@@ -315,6 +322,10 @@
       </div>
     </div>
     <div class="top-actions">
+      <div class="mode-switch" role="group" aria-label="Arayüz modu">
+        <button type="button" data-mode="simple" class="on">Basit</button>
+        <button type="button" data-mode="expert">Uzman</button>
+      </div>
       <label class="preset"><span>Senaryo</span><select id="preset"></select></label>
       <button class="btn" id="btn-share">Bağlantı</button>
       <button class="btn" id="btn-export">Dışa al</button>
@@ -335,7 +346,7 @@
   <aside class="sidebar">
     <div class="side-head">
       <h2>Parametreler</h2>
-      <p>Her değişiklik anında yeniden hesaplanır.</p>
+      <p id="side-sub">3 adımda kurulum; diğer değerler otomatik.</p>
     </div>
     <div id="groups"></div>
     <div class="side-note">
@@ -538,7 +549,7 @@ const DEFAULT = {
   system:'nft', pumpKwhDay:2.2,
   capexRates:{structure:1200, lighting:2000, hvac:900, irrigation:600, automation:500, other:400},
   capexExtra:0, grantPct:0, vatExempt:false, loanSharePct:0, loanRatePct:0, loanYears:7,
-  laborCount:1, selfLabor:false, employerCostMonth:34000,
+  laborCount:1, selfLabor:false, autoLabor:true, employerCostMonth:34000,
   packagingTLkg:18, logisticsTLkg:14, marketingPct:3, maintPct:3, insurancePct:1, otherFixedMonth:2000,
   priceEscPct:25, costInfPct:30, taxPct:25, usdTry:43, rampPct:70,
   tariffT1:7.00, tariffT2:4.60, tariffT3:3.26
@@ -706,6 +717,14 @@ function compute(s){
   const energyCost = ep.dayCost * 365;
   const kwhPerKg = netProdKg > 0 ? kwhYear / netProdKg : 0;
 
+  /* emek ihtiyacı (OPEX'ten önce): 1020 tepsi 0,125 m², tepsi başına ~13 dk */
+  const trayGrams = crop.yield * 125;
+  const traysWeek = (netProdKg/52) / (trayGrams/1000);
+  const autoRate = (s.capexRates && s.capexRates.automation) || 0;
+  const autoFactor = 1 - clamp(autoRate/5000, 0, 0.55);
+  const ownerHours = Math.max(2, traysWeek*0.22*autoFactor + bedM2*0.08);
+  const laborCountEff = (s.autoLabor && !s.selfLabor) ? Math.max(1, Math.ceil(ownerHours/50)) : s.laborCount;
+
   /* capex */
   const rates = s.capexRates;
   const rateSum = Object.keys(rates).reduce((a,k)=>a+num(rates[k]),0);
@@ -723,7 +742,7 @@ function compute(s){
   const seedCost = bedM2 * s.seedCostM2Cycle * cycles;
   const nutrientCost = netProdKg * s.nutrientTLkg;
   const rent = s.footprintM2 * s.rentM2Month * 12;
-  const labor = s.selfLabor ? 0 : s.laborCount * s.employerCostMonth * 12;
+  const labor = s.selfLabor ? 0 : laborCountEff * s.employerCostMonth * 12;
   const packaging = soldKg * s.packagingTLkg;
   const logistics = soldKg * s.logisticsTLkg;
   const marketing = revenue * (s.marketingPct/100);
@@ -764,13 +783,6 @@ function compute(s){
   const laborShare = revenue > 0 ? labor / revenue : 0;
   const kgM2Year = bedM2 > 0 ? netProdKg / bedM2 : 0;
   const revM2Year = bedM2 > 0 ? revenue / bedM2 : 0;
-  /* 1020 tepsi 0,125 m²: tepsi gramı verimden türetilir, ayrı alan tutulmaz */
-  const trayGrams = crop.yield * 125;
-  const traysWeek = (netProdKg/52) / (trayGrams/1000);
-  /* kaba emek tahmini: tepsi başına 13 dk, otomasyon CAPEX'i arttıkça azalır */
-  const autoRate = (s.capexRates && s.capexRates.automation) || 0;
-  const autoFactor = 1 - clamp(autoRate/5000, 0, 0.55);
-  const ownerHours = Math.max(2, traysWeek*0.22*autoFactor + bedM2*0.08);
 
   /* 5 yıllık projeksiyon */
   const years = [];
@@ -812,9 +824,11 @@ function compute(s){
   if (vpdF < 0.98) risks.push({p:16, t:'VPD penceresi dışı', d:`${nf(vpd,2)} kPa · hedef ${crop.vpd[0]}–${crop.vpd[1]} kPa`});
   if (waterF < 0.98) risks.push({p:14, t:'Kök bölgesi sıcaklığı yüksek', d:`${nf(s.waterTempC,1)} °C · Pythium eşiği 22 °C`});
   if (sys.outage > 0) risks.push({p:sys.outage, t:'Elektrik kesintisi toleransı düşük', d:`${sys.name}: ${sys.outage>=16?'saatler içinde kök kuruması':'kısa sürede oksijensizlik'} riski`});
-  if (s.laborCount === 1) risks.push({p:7, t:'Tek kişiye bağımlılık', d:'İzin/hastalıkta üretim durur'});
-  if (!s.selfLabor && s.laborCount > 0 && ownerHours > s.laborCount*40*1.25)
+  if (!s.selfLabor && laborCountEff === 1) risks.push({p:7, t:'Tek kişiye bağımlılık', d:'İzin/hastalıkta üretim durur'});
+  if (!s.selfLabor && !s.autoLabor && s.laborCount > 0 && ownerHours > s.laborCount*40*1.25)
     risks.push({p:8, t:'İşçilik kapasitesi yetersiz', d:`~${nf(ownerHours,0)} saat/hafta gerekiyor; ${s.laborCount} kişi ~${nf(s.laborCount*40,0)} saat karşılıyor`});
+  if (s.selfLabor && ownerHours > 50)
+    risks.push({p:6, t:'Kendi emeğiniz tam zamanlı', d:`~${nf(ownerHours,0)} saat/hafta; başka işinizle birlikte sürdürmek zor`});
   if (demandKg < netProdKg) risks.push({p:15, t:'Pazar emilimi yetersiz', d:`Üretim ${nf(netProdKg,0)} kg/yıl, talep ${nf(demandKg,0)} kg/yıl · ${nf(unsoldKg,0)} kg satılamıyor`});
   if (ch.mult <= 0.6) risks.push({p:12, t:'Düşük fiyatlı kanal', d:'Toptan satış marjı taşımıyor'});
   if (s.loanSharePct > 60) risks.push({p:10, t:'Yüksek kaldıraç', d:`Yatırımın %${nf(s.loanSharePct,0)}'i borç`});
@@ -834,7 +848,7 @@ function compute(s){
     opexItems, variable, fixed, opexTotal, grossProfit, ebitda,
     interestY1, principalY1, pbt, tax, netProfit, totalCost,
     unitCost, cashCostPerKg, breakEvenPrice, marginPct, laborShare,
-    kgM2Year, revM2Year, traysWeek, trayGrams, ownerHours, years, paybackMonths, roi,
+    kgM2Year, revM2Year, traysWeek, trayGrams, ownerHours, laborCountEff, years, paybackMonths, roi,
     risks, riskScore, riskLabel,
     tariffAvg: ep.kwhDay > 0 ? ep.dayCost/ep.kwhDay : 0
   };
@@ -869,6 +883,7 @@ function applyPreset(key){
   delete merged.crop;
   Object.assign(state, merged);
   state.preset = key;
+  state.autoLabor = simpleMode;
   syncInputs();
   render();
   persist();
@@ -1310,7 +1325,7 @@ function renderRehber(){
   document.querySelector('[data-panel="rehber"]').innerHTML = `
     <div class="card guide">
       <div class="card-head"><h3>Sıfırdan başlayanlar için rehber</h3><span class="sub">7 bölüm · sözlük · 30 gün planı</span></div>
-      <p class="lead" style="margin-bottom:12px">Bu bölüm, dikey tarımı hiç bilmeyen biri için yazıldı. Terim ilk geçtiğinde parantez içinde açıklanır; en altta sözlük var. Sayılar 2026 Türkiye varsayımıdır ve soldaki panelden değiştirilebilir.</p>
+      <p class="lead" style="margin-bottom:12px">Bu bölüm, dikey tarımı hiç bilmeyen biri için yazıldı. Terim ilk geçtiğinde parantez içinde açıklanır; en altta sözlük var. Sayılar 2026 Türkiye varsayımıdır ve soldaki panelden değiştirilebilir. Yeni başlıyorsanız sağ üstteki <b>Basit</b> modu kullanın: sadece yer, ürün ve satışı girersiniz; ışık, iklim, CAPEX ve çalışan sayısı otomatik hesaplanır.</p>
 
       <details open>
         <summary>1 · Dikey tarım nedir, ne değildir?</summary>
@@ -1651,6 +1666,14 @@ const HELP = {
 
 const FIELD_MAP = {};
 GROUPS.forEach(g => g.fields.forEach(f => { FIELD_MAP[f.k] = f; }));
+
+const SIMPLE_GROUPS = [
+  {id:'s1', title:'1 · Yeriniz', open:true, fields:['footprintM2','tiers','city','rentM2Month','selfLabor'].map(k=>FIELD_MAP[k])},
+  {id:'s2', title:'2 · Ne satacaksınız?', open:true, fields:['crop','channel','demandKgWeek'].map(k=>FIELD_MAP[k])},
+  {id:'s3', title:'3 · Bütçe ve destek (isteğe bağlı)', open:false, fields:['grantPct','vatExempt','loanSharePct'].map(k=>FIELD_MAP[k])}
+];
+let simpleMode = true;
+
 const idOf = k => k.replace(/\./g,'-');
 const TABS = [
   ['sim','Simülasyon'],['ozet','Özet'],['fizik','Işık & iklim'],['enerji','Enerji'],['ekonomi','Ekonomi'],
@@ -1698,11 +1721,45 @@ function fieldHTML(f){
 }
 
 function buildSidebar(){
-  $('groups').innerHTML = GROUPS.map(g=>`
+  const groups = simpleMode ? SIMPLE_GROUPS : GROUPS;
+  const note = simpleMode
+    ? `<div class="simple-note"><b>Basit mod</b>Yerinizi, ürünü ve satışı girin. Işık, iklim, CAPEX ve tarifeler bu senaryo için hazır; çalışan ihtiyacı otomatik hesaplanır.<button type="button" class="btn" data-mode="expert">Uzman moda geç</button></div>`
+    : '';
+  $('groups').innerHTML = note + groups.map(g=>`
     <details class="group" ${g.open?'open':''}>
       <summary>${g.title}</summary>
       <div class="group-body">${g.fields.map(fieldHTML).join('')}</div>
     </details>`).join('');
+}
+
+function updateModeUI(){
+  document.querySelectorAll('.mode-switch button').forEach(b=>{
+    b.classList.toggle('on', (b.dataset.mode==='simple') === simpleMode);
+  });
+  const sub = $('side-sub');
+  if (sub) sub.textContent = simpleMode
+    ? '3 adımda kurulum; diğer değerler otomatik.'
+    : 'Her değişiklik anında yeniden hesaplanır.';
+}
+
+function setMode(mode){
+  const want = mode === 'simple';
+  if (want === simpleMode) return;
+  const m = compute(state);
+  if (want){
+    state.autoLabor = true;
+  } else {
+    state.laborCount = m.laborCountEff;
+    state.autoLabor = false;
+  }
+  simpleMode = want;
+  try { localStorage.setItem('dt-mode', want ? 'simple' : 'expert'); } catch(e){}
+  buildSidebar();
+  syncInputs();
+  updateModeUI();
+  render();
+  schedulePersist();
+  toast(want ? 'Basit mod: 3 adım' : 'Uzman mod: tüm parametreler');
 }
 
 function syncInputs(){
@@ -1823,8 +1880,10 @@ function renderOzet(m){
     </tr>`).join('');
 
   let laborNote = '';
-  if (state.selfLabor || state.laborCount === 0){
+  if (state.selfLabor){
     laborNote = `<div class="alert"><span class="dot"></span><div><b>Kendi emeğiniz: ~${nf(m.ownerHours,0)} saat/hafta</b><small>Ücret modele dahil değil. Geri ödeme bu yüzden iyimser; uzun vadede kendi saatinizi de maliyet sayın.</small></div></div>`;
+  } else if (state.autoLabor){
+    laborNote = `<div class="alert"><span class="dot"></span><div><b>Otomatik işçilik: ${m.laborCountEff} kişi · ~${nf(m.ownerHours,0)} saat/hafta</b><small>Çalışan sayısı iş yükünden hesaplandı (kişi başı ~50 saat). Uzman modda elle değiştirebilirsiniz.</small></div></div>`;
   } else {
     const cap = state.laborCount*40;
     const over = m.ownerHours - cap;
@@ -1874,6 +1933,7 @@ function renderOzet(m){
           <tr><td>Tepsi eşdeğeri (1020)</td><td class="r">${nf(m.traysWeek,0)} tepsi/hafta</td></tr>
           <tr><td>Üretim</td><td class="r">${nf(m.netProdKg/52,1)} kg/hafta</td></tr>
           <tr><td>Yıllık döngü</td><td class="r">${nf(m.cycles,1)} kez</td></tr>
+          <tr><td>Çalışan</td><td class="r">${state.selfLabor ? 'kendi emeğin' : m.laborCountEff + ' kişi' + (state.autoLabor ? ' (otomatik)' : '')}</td></tr>
           <tr><td>Satılabilir üretim</td><td class="r">${nf(m.soldKg,0)} kg/yıl</td></tr>
           <tr><td>Pazar durumu</td><td class="r">${unsoldNote}</td></tr>
           <tr><td>IPARD III (temsili)</td><td class="r">${m.city.ipard ? badge('uygun il','green') : badge('kapsam dışı','gray')}</td></tr>
@@ -2433,6 +2493,11 @@ function bindEvents(){
     b.setAttribute('aria-expanded', String(!h.hidden));
   });
 
+  document.addEventListener('click', e=>{
+    const mb = e.target.closest('[data-mode]');
+    if (mb) setMode(mb.dataset.mode);
+  });
+
   $('tabs').addEventListener('click', e=>{
     const b = e.target.closest('button[data-tab]');
     if (b) switchTab(b.dataset.tab);
@@ -2500,14 +2565,20 @@ function bindEvents(){
 }
 
 function init(){
+  try {
+    const saved = localStorage.getItem('dt-mode');
+    if (saved) simpleMode = saved !== 'expert';
+  } catch(e){}
   buildSidebar();
   buildTabs();
   $('preset').innerHTML = Object.entries(PRESETS).map(([k,p])=>`<option value="${k}">${p.label}</option>`).join('')
     + '<option value="custom">Özel</option>';
   loadInitial();
+  if (!simpleMode) state.autoLabor = false;
   testResults = selfTest();
   bindEvents();
   syncInputs();
+  updateModeUI();
   SIM.sig = simSig();
   addLog('Simülasyon hazır. “Oynat” ile 120 günlük koşuyu başlat.');
   render();
