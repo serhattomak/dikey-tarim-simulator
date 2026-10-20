@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dikey Tarım (CEA) Mühendislik, Biyofizik ve Birim Ekonomi Rehberi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        warmbg: '#fbfbfa',
+                        cardbg: '#ffffff',
+                        stoneborder: '#e7e5e4',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fbfbfa;
+            color: #292524;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .tab-btn.active {
+            border-bottom: 3px solid #15803d;
+            color: #15803d;
+            font-weight: 700;
+            background-color: #f0fdf4;
+        }
+        /* Custom scrollbar for BOM table */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-100 selection:text-brand-900">
+
+    <!-- Chosen Palette: Warm Botanical Neutral (Bg: #FBFBFA, Card: #FFFFFF, Accent: #15803D, Text: #292524, Border: #E7E5E4) -->
+
+    <!-- Application Structure Plan:
+        1. Sticky Header & Navigation: Brand title, key metric indicators, primary tab navigation (Sektör Analizi, Sistem Mimarileri, Fotobiyoloji & İklim, 1020 Ekonomi & Yol Haritası, Türkiye 2026 Tarifeleri, BOM Listesi).
+        2. Dynamic Content Area (Tabbed Navigation):
+           - Tab 1: Küresel Sektör & İflas Otopsisi (Chart: VC sermaye vs borç yükü, elektrik tüketim kırılımı chart'ı, 5 kilit hayatta kalma kuralı).
+           - Tab 2: Sistem Mimarileri & Aeroponik (Interactive System Selector, Kratky vs DWC vs NFT vs HPA comparison matrix, 50-micron droplet physics).
+           - Tab 3: Fotobiyoloji, VPD & Besin Kimyası (Interactive DLI/PPFD Calculator, Dynamic VPD Calculator & Chart, Masterblend 2:1:2 Gübre Karışım Hesaplayıcısı, Pythium önleme kuralları).
+           - Tab 4: 1020 Tepsi Ekonomisi & Yol Haritası (Faz 1-2-3 Yol haritası, Interactive 1020 Microgreen Unit Economics Estimator, toplu tohum tasarruf simülatörü).
+           - Tab 5: Türkiye Tarifeleri & Devlet Destekleri (EPDK 2026 3-Zamanlı Gece Arbitraj Simülatörü, KKYDP / IPARD III / Ziraat Bankası sıfır faizli kredi rehberi).
+           - Tab 6: Detaylı BOM (Alet/Edevat) Listesi (Arama ve kategori filtreli malzeme veritabanı).
+        3. Footer: Legal/Technical disclaimer, summary notes.
+        WHY THIS STRUCTURE: Converts a massive, multi-faceted engineering research paper into actionable interactive calculation tools, decision matrixes, and live simulators.
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. Chart 1: Bar Chart for Bankruptcy/Restructuring metrics (Plenty, Bowery, AppHarvest, AeroFarms, Infarm). Standard Chart.js Canvas.
+        2. Chart 2: Doughnut Chart for Operational Electricity Breakdown (Lighting 78%, HVACD 15-40%, Pumps 2-10%).
+        3. Chart 3: EPDK 3-Zamanlı Elektrik Birim Fiyat Karşılaştırması (Puant vs Gündüz vs Gece T3 tarifesi).
+        4. Interactive Calculators: DLI Calculator, Masterblend 2:1:2 Dose Calculator, 1020 Microgreen ROI Calculator, Electricity Tariff Arbitraj Simulator.
+        5. Interactive BOM Data Table with Live Search and Phase/Category filters.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b border-stoneborder sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-brand-700 text-white flex items-center justify-center font-black text-xl shadow-inner">
+                    🌱
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold text-stone-900 leading-tight">Dikey Tarım (CEA) Mühendislik & Ekonomi Platformu</h1>
+                    <p class="text-xs text-stone-500">Kontrollü Ortam Tarımı: Biyofizik, İklimlendirme, Birim Ekonomi ve Türkiye 2026 Rehberi</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 text-xs text-stone-600 bg-stone-100 p-1.5 rounded-lg overflow-x-auto">
+                <span class="px-2 py-1 bg-white rounded shadow-sm font-semibold text-brand-800">⚡ Gece Tarifesi: ~3,26 ₺/kWh</span>
+                <span class="px-2 py-1 bg-white rounded shadow-sm font-semibold text-amber-800">☀️ Puant: ~7,00 ₺/kWh</span>
+                <span class="px-2 py-1 bg-white rounded shadow-sm font-semibold text-blue-800">💧 Opt. Su Sıcaklığı: 18-21°C</span>
+            </div>
+        </div>
+
+        <!-- MAIN NAVIGATION TABS -->
+        <nav class="bg-stone-50 border-t border-stoneborder overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1 text-sm font-medium whitespace-nowrap">
+                <button onclick="switchTab('tab-sektor')" id="btn-tab-sektor" class="tab-btn active px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    📊 Sektör & İflas Dersleri
+                </button>
+                <button onclick="switchTab('tab-sistemler')" id="btn-tab-sistemler" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    ⚙️ Sistemler & Aeroponik
+                </button>
+                <button onclick="switchTab('tab-fizik')" id="btn-tab-fizik" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    💡 Light, VPD & Kimya (Araçlar)
+                </button>
+                <button onclick="switchTab('tab-ekonomi')" id="btn-tab-ekonomi" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    🚀 1020 Tepsi & Yol Haritası
+                </button>
+                <button onclick="switchTab('tab-turkiye')" id="btn-tab-turkiye" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    🇹🇷 Türkiye Tarifeleri & Hibeler
+                </button>
+                <button onclick="switchTab('tab-bom')" id="btn-tab-bom" class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brand-700 transition-colors">
+                    📋 Ekipman & BOM Listesi
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: Sektör Analizi ve İflas Otopsisi -->
+        <!-- ========================================== -->
+        <section id="tab-sektor" class="tab-content space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Küresel Dikey Tarım Sektörü ve Milyar Dolarlık İflasların Otopsisi</h2>
+                <p class="text-stone-600 text-sm leading-relaxed mb-4">
+                    2020–2026 döneminde küresel dikey tarım (PFAL / CEA) sektörüne 14 milyar doların üzerinde risk sermayesi (VC) yatırılmıştır. Ancak 2022–2025 yılları arasında yaşanan sert iflas dalgası, dikey tarımın bir "yazılım teknolojisi mucizesi" değil, katı termodinamik ve birim ekonomi (unit economics) kurallarına tabi endüstriyel bir üretim süreci olduğunu kanıtlamıştır.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+                    <!-- Chart Container 1: Bankruptcy Capital vs Debt -->
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stoneborder flex flex-col">
+                        <h3 class="font-bold text-stone-800 text-sm mb-1 text-center">Dev Girişimlerin Kaynak ve Borç Yükleri ($ Milyon)</h3>
+                        <p class="text-xs text-stone-500 mb-3 text-center">Yüz milyonlarca dolar sermayeye rağmen çöken devlerin finansal büyüklüğü</p>
+                        <div class="chart-container">
+                            <canvas id="chartBankruptcy"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container 2: Electricity Breakdown -->
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stoneborder flex flex-col">
+                        <h3 class="font-bold text-stone-800 text-sm mb-1 text-center">Tesis İçi Elektrik Tüketim Dağılımı (%)</h3>
+                        <p class="text-xs text-stone-500 mb-3 text-center">OPEX'in ana sürücüsü: Tüketimin %78'i doğrudan LED aydınlatmadır</p>
+                        <div class="chart-container">
+                            <canvas id="chartElectricity"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="text-red-800 font-bold text-base mb-1">🚨 Neden Başarısız Oldular?</div>
+                        <ul class="text-xs text-stone-700 space-y-1.5 list-disc list-inside">
+                            <li><strong>Ücretsiz Güneş vs Pahalı Elektrik:</strong> Yılda 100-150 kWh/m² tüketim (seranın 10 katı).</li>
+                            <li><strong>Düşük Katma Değerli Mahsuller:</strong> 18 kWh/kg elektrikle standart emtia marul üretmeye çalışmak.</li>
+                            <li><strong>Aşırı CAPEX:</strong> Akre başına 17 milyon $'a varan aşırı otomasyon maliyetleri.</li>
+                            <li><strong>Silikon Vadisi Yanılsaması:</strong> Ziraat mühendisliği yerine yazılımcı ordusu istihdam etmek.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                        <div class="text-emerald-800 font-bold text-base mb-1">✅ Hayatta Kalmanın 5 Altın Kuralı</div>
+                        <ul class="text-xs text-stone-700 space-y-1.5 list-disc list-inside">
+                            <li><strong>Oda Ölçeğinde Kârlılık:</strong> İkinci odaya geçmeden tek odada pozitif birim ekonomi.</li>
+                            <li><strong>Yüksek Katma Değerli Mahsul:</strong> Mikroyeşillik, tıbbi aromatik otlar, özel çilek.</li>
+                            <li><strong>kWh/kg Optimizasyonu:</strong> 18 kWh/kg yerine 7.5 kWh/kg hedefine ulaşmak.</li>
+                            <li><strong>Gece Tarifesi Arbitrajı:</strong> Işıkları gece ucuz elektrik saatlerine kaydırmak.</li>
+                            <li><strong>Alım Garantisi (Off-Take):</strong> Kapasitenin %50'si satılmadan inşaata başlamamak.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="text-blue-800 font-bold text-base mb-1">⚡ Enerji Hassasiyeti Analizi</div>
+                        <p class="text-xs text-stone-700 leading-relaxed">
+                            <strong>Düşük tarifeden ziyade kWh/kg tüketimini düşürmek kritiktir:</strong><br><br>
+                            • 0,08 $/kWh tarifede 18 kWh/kg harcayan tesis = <strong>1,44 $/kg</strong> enerji harcar.<br>
+                            • 0,15 $/kWh tarifede 7,5 kWh/kg harcayan tesis = <strong>1,13 $/kg</strong> enerji harcar.<br><br>
+                            Mühendislik optimizasyonu, ucuz elektrik tarifesinden daha yüksek rekabet avantajı sağlar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: Sistem Mimarileri & Aeroponik -->
+        <!-- ========================================== -->
+        <section id="tab-sistemler" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Dikey Tarım Sistem Mimarileri ve Kök Bölgesi (Rhizosphere) Mühendisliği</h2>
+                <p class="text-stone-600 text-sm mb-4">
+                    Topraksız dikey tarımda sistem başarısı; bitki köklerinin aynı anda su, makro/mikro besin iyonları ve <strong>çözünmüş oksijene (DO)</strong> kesintisiz erişebilmesine bağlıdır. Oksijensiz kalan kökler hızla boğulur ve <em>Pythium</em> saldırısına uğrar.
+                </p>
+
+                <!-- Interactive Architecture Selector -->
+                <div class="bg-stone-50 p-4 rounded-xl border border-stoneborder my-4">
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-2">Sistem Mimarisi İnceleme Seçici:</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <button onclick="showArch('kratky')" id="btn-kratky" class="arch-btn bg-white border border-stone-300 p-2 rounded text-center hover:border-brand-600 font-medium">Kratky (Pasif)</button>
+                        <button onclick="showArch('dwc')" id="btn-dwc" class="arch-btn bg-white border border-stone-300 p-2 rounded text-center hover:border-brand-600 font-medium">DWC (Derin Su)</button>
+                        <button onclick="showArch('nft')" id="btn-nft" class="arch-btn bg-white border border-stone-300 p-2 rounded text-center hover:border-brand-600 font-medium">NFT (Besin Filmi)</button>
+                        <button onclick="showArch('hpa')" id="btn-hpa" class="arch-btn bg-white border border-stone-300 p-2 rounded text-center hover:border-brand-600 font-medium">HPA (Yüksek Basınç Aero)</button>
+                    </div>
+
+                    <!-- Arch Details Display -->
+                    <div id="arch-details" class="mt-4 p-4 bg-white rounded-lg border border-stone-200 text-xs leading-relaxed space-y-2">
+                        <!-- Dynamic content loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Aeroponic Droplet Physics Callout -->
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg my-4">
+                    <h3 class="font-bold text-amber-900 text-sm mb-1">🔬 Aeroponikte 50 Mikron Damlacık Fiziği ve NASA Standardı</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-stone-700 mt-2">
+                        <div class="bg-white p-3 rounded border border-amber-100">
+                            <span class="font-bold text-amber-800">LPA (Düşük Basınç):</span> &lt;30 PSI basınç, &gt;100 µm kaba damlalar. Kökleri sırf ıslatır, oksijen emilimini kısıtlar, su birikmesine neden olur.
+                        </div>
+                        <div class="bg-white p-3 rounded border border-amber-100">
+                            <span class="font-bold text-brand-800">HPA (Yüksek Basınç - NASA):</span> 60-150 PSI basınç, 20-50 µm mikro-sis. Kökler %75 havada asılı kalır. %98 daha az su, %60 daha az gübre, 3 kat verim.
+                        </div>
+                        <div class="bg-white p-3 rounded border border-amber-100">
+                            <span class="font-bold text-purple-800">Ultrasonik (Fogponics):</span> &lt;10 µm aşırı ince sis. Kök tüyleri gelişir ancak yanal kök kütlesi oluşmaz; tuzlar ultrasonik diskleri tıkar.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Comparison Matrix Table -->
+                <div class="overflow-x-auto mt-6">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-stone-800 text-white">
+                                <th class="p-2.5 rounded-tl">Sistem Mimarisi</th>
+                                <th class="p-2.5">Besin İletimi</th>
+                                <th class="p-2.5">Damlacık / Su Profili</th>
+                                <th class="p-2.5">Elektrik & Pompa</th>
+                                <th class="p-2.5">CAPEX</th>
+                                <th class="p-2.5">Arıza Toleransı</th>
+                                <th class="p-2.5 rounded-tr">En Uygun Mahsul</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-stone-200 bg-white">
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold">Kratky (Pasif)</td>
+                                <td class="p-2.5">Durgun su + Nemli hava boşluğu</td>
+                                <td class="p-2.5">Durgun sıvı kütlesi</td>
+                                <td class="p-2.5">Yok (Pasif)</td>
+                                <td class="p-2.5 text-emerald-700 font-semibold">Çok Düşük</td>
+                                <td class="p-2.5 text-emerald-700 font-semibold">Çok Yüksek (Günlerce)</td>
+                                <td class="p-2.5">Marul, fesleğen, kısa döngülü yeşillik</td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold">DWC (Derin Su)</td>
+                                <td class="p-2.5">Havalandırılmış suda daldırma</td>
+                                <td class="p-2.5">Hava taşlı sıvı kütlesi</td>
+                                <td class="p-2.5">Orta (7/24 Hava Pompası)</td>
+                                <td class="p-2.5">Düşük - Orta</td>
+                                <td class="p-2.5 text-emerald-700 font-semibold">Yüksek (Tampon su var)</td>
+                                <td class="p-2.5">Marul, lahana, fesleğen</td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold">NFT (Besin Filmi)</td>
+                                <td class="p-2.5">Eğimli olukta ince su filmi</td>
+                                <td class="p-2.5">1-3 mm akan ince film</td>
+                                <td class="p-2.5">Yüksek (7/24 Su Pompası)</td>
+                                <td class="p-2.5">Orta - Yüksek</td>
+                                <td class="p-2.5 text-red-600 font-semibold">Düşük (Saatler içinde kurur)</td>
+                                <td class="p-2.5">Ticari marul, yeşillik, otlar</td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold">Ebb & Flow (Gel-Git)</td>
+                                <td class="p-2.5">Periyodik su basma ve drenaj</td>
+                                <td class="p-2.5">Islak / Kuru evre döngüsü</td>
+                                <td class="p-2.5">Orta (Pompa + Timer)</td>
+                                <td class="p-2.5">Orta</td>
+                                <td class="p-2.5">Orta (Substrata bağlı)</td>
+                                <td class="p-2.5">Mikroyeşillik, çilek, biber</td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold">LPA (Düşük Bsn Aero)</td>
+                                <td class="p-2.5">Fıskiye ile su sıçratma</td>
+                                <td class="p-2.5">&gt;100 µm kaba damlalar</td>
+                                <td class="p-2.5">Yüksek (Standart Su Pompası)</td>
+                                <td class="p-2.5">Orta</td>
+                                <td class="p-2.5 text-red-600 font-semibold">Düşük</td>
+                                <td class="p-2.5">Dikey kuleler, yapraklı yeşillik</td>
+                            </tr>
+                            <tr class="hover:bg-stone-50">
+                                <td class="p-2.5 font-bold text-brand-800">HPA (Yüksek Bsn Aero)</td>
+                                <td class="p-2.5">Püskürtmeli atomize nozul</td>
+                                <td class="p-2.5">20-50 µm mikro-sis</td>
+                                <td class="p-2.5">Çok Yüksek (Yüksek Bsn Pompası)</td>
+                                <td class="p-2.5 text-red-600 font-semibold">Çok Yüksek</td>
+                                <td class="p-2.5 text-red-600 font-semibold">Çok Düşük (Dakikalar kritik)</td>
+                                <td class="p-2.5">Tıbbi bitkiler, yumrulu bitkiler</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: Fotobiyoloji, VPD & Besin Kimyası -->
+        <!-- ========================================== -->
+        <section id="tab-fizik" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Bitki Fizyolojisi, Fotobiyoloji ve İklimlendirme Hesaplama Araçları</h2>
+                <p class="text-stone-600 text-sm mb-4">
+                    Kapalı dikey tarımda başarı; ışık fiziği (PPFD/DLI), hava termodinamiği (VPD) ve su kimyasının (Masterblend 2:1:2) hassas kontrolü ile sağlanır.
+                </p>
+
+                <!-- TOOL 1: DLI & PPFD Calculator -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                    <div class="bg-stone-50 p-5 rounded-xl border border-stoneborder">
+                        <h3 class="font-bold text-stone-900 text-sm mb-3 flex items-center">
+                            <span class="mr-2">💡</span> Interaktif DLI (Günlük Işık İntegrali) Hesaplayıcı
+                        </h3>
+                        <p class="text-xs text-stone-500 mb-4">Formül: DLI = PPFD × Aydınlatma Saati × 0.0036</p>
+                        
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-medium mb-1">PPFD Değeri (µmol·m⁻²·s⁻¹): <span id="ppfd-val" class="font-bold text-brand-700">200</span></label>
+                                <input type="range" id="ppfd-input" min="50" max="400" value="200" step="5" class="w-full accent-brand-700" oninput="calcDLI()">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-1">Fotoperiyot / Işık Süresi (Saat/Gün): <span id="hours-val" class="font-bold text-brand-700">16</span></label>
+                                <input type="range" id="hours-input" min="8" max="24" value="16" step="1" class="w-full accent-brand-700" oninput="calcDLI()">
+                            </div>
+
+                            <div class="p-3 bg-white rounded border border-stone-200 mt-4">
+                                <div class="text-xs text-stone-500">Hesaplanan Günlük DLI:</div>
+                                <div class="text-2xl font-black text-brand-800" id="dli-result">11.52 <span class="text-xs font-normal">mol·m⁻²·gün⁻¹</span></div>
+                                <div class="text-xs font-medium text-stone-700 mt-1" id="dli-eval">Tam boy marul ve yapraklı yeşillikler için mükemmel hedef.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 2: Masterblend 2:1:2 Fertilizer Calculator -->
+                    <div class="bg-stone-50 p-5 rounded-xl border border-stoneborder">
+                        <h3 class="font-bold text-stone-900 text-sm mb-3 flex items-center">
+                            <span class="mr-2">🧪</span> Masterblend 2:1:2 Dozaj Hesaplayıcı
+                        </h3>
+                        <p class="text-xs text-stone-500 mb-2">Masterblend 4-18-38 + Magnezyum Sülfat + Kalsiyum Nitrat</p>
+                        
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-medium mb-1">Hazırlanacak Su Hacmi (Litre):</label>
+                                <input type="number" id="water-liters" value="10" min="1" max="10000" class="w-full p-2 border rounded bg-white" oninput="calcMasterblend()">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-1">Hedef Yoğunluk Modu:</label>
+                                <select id="mb-mode" class="w-full p-2 border rounded bg-white text-xs" onchange="calcMasterblend()">
+                                    <option value="standard">Standart Üretim (EC ~2.0 mS/cm)</option>
+                                    <option value="light">Hafif / Marul Yeşillik (EC ~1.2 mS/cm)</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border border-stone-200 space-y-1">
+                                <div class="flex justify-between font-medium"><span>1. Masterblend (4-18-38):</span> <span id="mb-gram" class="font-bold text-stone-900">6.34 g</span></div>
+                                <div class="flex justify-between font-medium"><span>2. Magnezyum Sülfat (Epsom):</span> <span id="epsom-gram" class="font-bold text-stone-900">3.17 g</span></div>
+                                <div class="flex justify-between font-medium"><span>3. Kalsiyum Nitrat (15.5-0-0):</span> <span id="calnit-gram" class="font-bold text-stone-900">6.34 g</span></div>
+                            </div>
+                            <p class="text-[10px] text-red-600 font-semibold">⚠️ Çökelme Kuralı: Kalsiyum Nitrat ile Masterblend toz halde asla karıştırılmaz! Önce Masterblend çözülür, sonra Epsom, en son CalNit eklenir.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOOL 3: VPD Dynamic Calculation & Tipburn Risk -->
+                <div class="bg-stone-50 p-5 rounded-xl border border-stoneborder my-6">
+                    <h3 class="font-bold text-stone-900 text-sm mb-2">🌡️ Termodinamik ve VPD (Buhar Basıncı Açığı) Analizörü</h3>
+                    <p class="text-xs text-stone-500 mb-4">
+                        Sıcaklık ve Bağıl Nem (RH) değerlerini girerek bitkinin terleme baskısını (VPD) ve <strong>Uç Yanıklığı (Tipburn)</strong> riskini hesaplayın.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block font-medium mb-1">Hava Sıcaklığı (°C): <span id="temp-val" class="font-bold text-brand-700">22</span>°C</label>
+                            <input type="range" id="temp-input" min="15" max="35" value="22" step="1" class="w-full accent-brand-700" oninput="calcVPD()">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Bağıl Nem (% RH): <span id="rh-val" class="font-bold text-brand-700">65</span>%</label>
+                            <input type="range" id="rh-input" min="30" max="90" value="65" step="1" class="w-full accent-brand-700" oninput="calcVPD()">
+                        </div>
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <div class="text-stone-500">Hesaplanan Yapraksal VPD:</div>
+                            <div class="text-2xl font-black" id="vpd-result">0.93 <span class="text-xs font-normal">kPa</span></div>
+                            <div class="text-xs font-semibold mt-1" id="vpd-status">Optimum Hedef Pencere (0.8 - 1.2 kPa)</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <span class="font-bold text-red-700">Düşük VPD (&lt; 0.5 kPa - Aşırı Nemli):</span> Bitki terleyemez. Gece kök basıncı kalsiyumu iç genç yapraklara taşıyamaz. <strong>Guttation ve İç Yaprak Uç Yanıklığı (Tipburn)</strong> oluşur.
+                        </div>
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <span class="font-bold text-amber-700">Yüksek VPD (&gt; 1.3 kPa - Aşırı Kuru):</span> Bitki aşırı su kaybeder, stomalarını kapatır, fotosentez durur. Dış yaşlı yapraklar kalsiyumu emer, iç yapraklar yine kalsiyumsuz kalır.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pathogen Callout -->
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-xs space-y-2">
+                    <h4 class="font-bold text-red-900 text-sm">🦠 Kök Çürüklüğü (Pythium) Önleme Protokolü</h4>
+                    <p class="text-stone-700">
+                        • <strong>Su Sıcaklık Eşiği:</strong> Su sıcaklığı <strong>22°C üzerine çıktığında</strong> çözünmüş oksijen (DO) düşer ve <em>Pythium</em> patlaması yaşanır. Su soğutucu (chiller) ile tank sıcaklığı <strong>18-21°C</strong> arasında tutulmalıdır.<br>
+                        • <strong>Steril vs Biyolojik Kuralı:</strong> Suya ya Steril dezenfektan (Hipokloröz Asit HOCl veya H₂O₂) katılır YA DA Biyolojik koruyucu (<em>Bacillus</em> / <em>Trichoderma</em>) eklenir. <strong>İkisi kesinlikle karıştırılmaz!</strong> HOCl faydalı bakterileri saniyeler içinde öldürür.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 1020 Tepsi Ekonomisi & Yol Haritası -->
+        <!-- ========================================== -->
+        <section id="tab-ekonomi" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Ev Ölçeğinden Ticariye: 1020 Tepsi Birim Ekonomi Simülatörü</h2>
+                <p class="text-stone-600 text-sm mb-4">
+                    Tam boy marul 35-45 günde yetişip düşük fiyata satılırken, mikroyeşillikler <strong>6 ila 18 günde</strong> hasat edilir ve en yüksek kâr marjını sunar. Standart birim 25×50 cm ölçülerindeki <strong>1020 Tepsi (1020 Tray)</strong> boyutudur.
+                </p>
+
+                <!-- TOOL 4: Interactive 1020 Microgreen Estimator -->
+                <div class="bg-stone-50 p-5 rounded-xl border border-stoneborder my-6">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3">🧮 1020 Tepsi Üretim ve Finansal Kârlılık Simulasyonu</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs mb-4">
+                        <div>
+                            <label class="block font-medium mb-1">Haftalık Üretilen Tepsi Sayısı:</label>
+                            <input type="number" id="tray-count" value="30" min="1" max="1000" class="w-full p-2 border rounded bg-white" oninput="calc1020()">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Ana Mahsul Türü:</label>
+                            <select id="crop-type" class="w-full p-2 border rounded bg-white" onchange="calc1020()">
+                                <option value="radish">Turp (Radish - 6-8 Gün Döngü)</option>
+                                <option value="sunflower">Ayçiçeği (Sunflower - 8-12 Gün Döngü)</option>
+                                <option value="pea">Bezelye Filizi (Pea Shoots - 9-14 Gün Döngü)</option>
+                                <option value="broccoli">Brokoli (Broccoli - 8-12 Gün Döngü)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Tepsi Başı Satış Fiyatı ($):</label>
+                            <input type="number" id="tray-price" value="30" min="10" max="100" class="w-full p-2 border rounded bg-white" oninput="calc1020()">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-center">
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <span class="text-stone-500 block">Haftalık Brüt Ciro:</span>
+                            <span id="res-revenue" class="text-lg font-black text-brand-700">$900</span>
+                        </div>
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <span class="text-stone-500 block">Doğrudan Tohum & Medya Maliyeti:</span>
+                            <span id="res-cogs" class="text-lg font-bold text-red-600">$82.50</span>
+                        </div>
+                        <div class="p-3 bg-white rounded border border-stone-200">
+                            <span class="text-stone-500 block">Tam Yüklü Maliyet (İşçilik/Elektrik/BOM):</span>
+                            <span id="res-loaded" class="text-lg font-bold text-stone-800">$259.80</span>
+                        </div>
+                        <div class="p-3 bg-white rounded border border-brand-300 bg-brand-50">
+                            <span class="text-brand-900 font-semibold block">Haftalık Net Kâr:</span>
+                            <span id="res-profit" class="text-xl font-black text-brand-800">$640.20</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Seed Savings Callout -->
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs my-4">
+                    <h4 class="font-bold text-blue-900 text-sm mb-1">💡 Toplu Tohum Tedarikinin (Bulk Purchasing) Kaldıraç Etkisi</h4>
+                    <p class="text-stone-700 leading-relaxed">
+                        Tepsi başına 25g ekilen Brokoli tohumunda:<br>
+                        • 1 oz (28g) paket alımda tepsi başı tohum maliyeti = <strong>&gt; $5,00</strong><br>
+                        • 1 lb (454g) paket alımda tepsi başı tohum maliyeti = <strong>$0,77</strong><br>
+                        • 25 lb (11.3 kg çuval) alımda tepsi başı tohum maliyeti = <strong>$0,35 - $0,45 (%92 Tasarruf!)</strong>
+                    </p>
+                </div>
+
+                <!-- Three Phase Roadmap Table -->
+                <div class="mt-6">
+                    <h3 class="font-bold text-stone-900 text-sm mb-3">🗺️ 3 Aşamalı Büyüme ve Ölçeklendirme Basamakları</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="p-4 bg-stone-50 rounded-lg border border-stone200">
+                            <div class="font-bold text-stone-900 text-sm mb-1">Faz 1: Ev / Boş Oda ($500 - $800 CAPEX)</div>
+                            <p class="text-stone-600 mb-2">1 Adet 4 katlı tel raf + 4-8 LED bar. 20-30 Tepsi/Hafta kapasite.</p>
+                            <span class="inline-block px-2 py-1 bg-stone-200 rounded font-semibold text-stone-800">Beklenen Gelir: $1.000 - $2.500 / Ay</span>
+                        </div>
+                        <div class="p-4 bg-stone-50 rounded-lg border border-stone200">
+                            <div class="font-bold text-brand-800 text-sm mb-1">Faz 2: Garaj / Mikro-Dükkan ($2.300 - $5.000 CAPEX)</div>
+                            <p class="text-stone-600 mb-2">Çoklu raf, nem alma, soğuk oda entegrasyonu. 60-100 Tepsi/Hafta.</p>
+                            <span class="inline-block px-2 py-1 bg-brand-100 text-brand-800 rounded font-semibold">Beklenen Gelir: $3.000 - $8.000 / Ay</span>
+                        </div>
+                        <div class="p-4 bg-stone-50 rounded-lg border border-stone200">
+                            <div class="font-bold text-purple-800 text-sm mb-1">Faz 3: Ticari Tesis ($20k - $200k CAPEX)</div>
+                            <p class="text-stone-600 mb-2">PLC otomasyon, peristaltik dozaj, hareketli oluklar. 300+ Tepsi/Hafta.</p>
+                            <span class="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded font-semibold">Beklenen Gelir: $10.000+ / Ay</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: Türkiye Tarifeleri & Devlet Destekleri -->
+        <!-- ========================================== -->
+        <section id="tab-turkiye" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Türkiye Özelinde Maliyet Analizi, Elektrik Tarifeleri ve Hibe Mekanizmaları</h2>
+                <p class="text-stone-600 text-sm mb-4">
+                    EPDK ulusal elektrik tarifelerinde gündüz ile gece saatleri arasında devasa fiyat farkları bulunmaktadır. Işıklandırmayı geceye kaydırmak (Night-Shift) işletme maliyetini yarı yarıya düşürür.
+                </p>
+
+                <!-- Tariff Chart & Simulator -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stoneborder flex flex-col">
+                        <h3 class="font-bold text-stone-800 text-sm mb-1 text-center">EPDK 3-Zamanlı Elektrik Aktif Enerji Bedelleri (TL/kWh)</h3>
+                        <p class="text-xs text-stone-500 mb-3 text-center">Puant saatlerdeki elektrik aktif bedeli gece tarifesinin 7,3 katıdır!</p>
+                        <div class="chart-container">
+                            <canvas id="chartTariff"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 5: EPDK Night Shift Arbitrage Simulator -->
+                    <div class="bg-stone-50 p-5 rounded-xl border border-stoneborder">
+                        <h3 class="font-bold text-stone-900 text-sm mb-3">⚡ Night-Shift (Gece Arbitrajı) Tasarruf Hesaplayıcı</h3>
+                        <p class="text-xs text-stone-500 mb-3">16 Saat Işık / 8 Saat Karanlık döngüsünü puant saatlerden (17:00-22:00) kaçırıp Geceye (23:00-08:00) kaydırma etkisi:</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-medium mb-1">Aylık Toplam Üretim Miktarı (kg Marul / Mahsul):</label>
+                                <input type="number" id="monthly-yield" value="500" min="10" max="10000" class="w-full p-2 border rounded bg-white" oninput="calcTariffArbitrage()">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-1">Tesis Enerji Verimliliği (kWh/kg):</label>
+                                <select id="efficiency-kwh" class="w-full p-2 border rounded bg-white" onchange="calcTariffArbitrage()">
+                                    <option value="7.63">Optimize Tesis (7.63 kWh/kg - Saha Ölçümü)</option>
+                                    <option value="15.0">Standart Tesis (15.0 kWh/kg - Sektör Ortalaması)</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border border-stone-200 space-y-1 mt-3">
+                                <div class="flex justify-between"><span>Gündüz/Puant Çalışma Aylık Elektrik:</span> <span id="cost-day" class="font-bold text-red-600">32.500 ₺</span></div>
+                                <div class="flex justify-between"><span>T3 Gece Arbitrajlı Çalışma Aylık Elektrik:</span> <span id="cost-night" class="font-bold text-brand-700">16.300 ₺</span></div>
+                                <div class="flex justify-between border-t pt-1 font-bold"><span>Aylık Net Elektrik Tasarrufu:</span> <span id="cost-savings" class="text-brand-800 text-sm">16.200 ₺ / Ay</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grants & Incentives Guide Section -->
+                <div class="mt-6 border-t border-stone200 pt-6">
+                    <h3 class="font-bold text-stone-900 text-base mb-3">🏛️ Türkiye 2026 Hibe ve Teşvik Mekanizmaları</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                            <div class="font-bold text-emerald-900 text-sm mb-1">KKYDP (Tarım Bakanlığı)</div>
+                            <p class="text-stone-700 mb-2">
+                                <strong>Kritik Avantaj:</strong> Kapalı dikey tarım tesislerinde <strong>asgari alan (dekar) kısıtı yoktur!</strong><br>
+                                • Hibe Oranı: %50 - %70<br>
+                                • Üst Limit: 30.000.000 TL<br>
+                                • Bütçenin %20'si genç ve kadın girişimcilere ayrılmıştır.
+                            </p>
+                        </div>
+
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="font-bold text-blue-900 text-sm mb-1">TKDK IPARD III (42 İl)</div>
+                            <p class="text-stone-700 mb-2">
+                                <strong>Kritik Avantaj:</strong> İnşaat ve makine/ekipman alımında <strong>%20 KDV Muafiyeti (%0 KDV)</strong>.<br>
+                                • Hibe Oranı: %50 - %75<br>
+                                • Hidroponik, aeroponik ve GES yenilenebilir enerji destek kapsamındadır.
+                            </p>
+                        </div>
+
+                        <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                            <div class="font-bold text-purple-900 text-sm mb-1">Ziraat Bankası Düşük Faizli Kredi</div>
+                            <p class="text-stone-700 mb-2">
+                                Kontrollü örtü altı ve topraksız tarımda 41 yaş altı genç çiftçi ve kadın üreticilere <strong>%100'e varan faiz indirimi (Sıfır Faizli Kredi)</strong>.<br>
+                                • 2 Yıl ödemesiz, toplam 7 yıl vade.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: Detaylı BOM (Alet/Edevat) Listesi -->
+        <!-- ========================================== -->
+        <section id="tab-bom" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-stoneborder shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-900">Kapsamlı Ekipman ve Malzeme Listesi (Bill of Materials - BOM)</h2>
+                        <p class="text-stone-600 text-xs">Ev ölçeği, boş oda mikro-ticari ve tam otomasyonlu ticari sistemler için malzeme envanteri</p>
+                    </div>
+
+                    <!-- Search and Filter Bar -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" id="bom-search" placeholder="Malzeme adı veya arama terimi..." class="p-2 border border-stone-300 rounded text-xs w-48 sm:w-64" oninput="filterBOM()">
+                        <select id="bom-filter-cat" class="p-2 border border-stone-300 rounded text-xs" onchange="filterBOM()">
+                            <option value="all">Tüm Kategoriler</option>
+                            <option value="Structure">1. Taşıyıcı & Kaplar</option>
+                            <option value="Lighting">2. Aydınlatma</option>
+                            <option value="Irrigation">3. Sulama & Aero</option>
+                            <option value="HVACD">4. İklimlendirme</option>
+                            <option value="Sensors">5. Sensör & Otomasyon</option>
+                            <option value="Supplies">6. Gübre & Sarf</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- BOM Interactive Table -->
+                <div class="overflow-x-auto max-h-[600px]">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="sticky top-0 bg-stone-800 text-white z-10">
+                            <tr>
+                                <th class="p-2.5">Kategori</th>
+                                <th class="p-2.5">Malzeme Adı (TR)</th>
+                                <th class="p-2.5">Teknik Arama Terimi (EN)</th>
+                                <th class="p-2.5">Faz 1 (Ev)</th>
+                                <th class="p-2.5">Faz 2 (Boş Oda)</th>
+                                <th class="p-2.5">Faz 3 (Ticari)</th>
+                                <th class="p-2.5">Kullanım Amacı & Spesifikasyon</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bom-tbody" class="divide-y divide-stone-200 bg-white">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-stone-900 text-stone-400 text-xs py-6 border-t border-stone-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-medium text-stone-300">Dikey Tarım (Vertical Farming) ve Kontrollü Ortam Tarımı (CEA) İnteraktif Rehberi</p>
+            <p>Bu uygulama deneysel veri, biyofiziksel denklemler ve EPDK mevzuatı esas alınarak bilgi amaçlı hazırlanmıştır.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Global BOM Master Dataset
+        const bomData = [
+            { category: "Structure", name: "4-5 Katlı Tel Raf", en: "4-Tier Wire Shelving Rack", f1: "1 Adet", f2: "2-6 Adet (120x45x180cm)", f3: "Mobil / Shuttle Raf", note: "Tekerlekli, kat yüksekliği ayarlanabilir paslanmaz galvaniz raf." },
+            { category: "Structure", name: "1020 Yetiştirme Tepsisi", en: "1020 Shallow Grow Trays", f1: "4-8 Adet", f2: "40-200 Adet", f3: "300+ Adet", note: "25x50 cm; üstteki delikli tepsi kökü tutar, alttaki deliksiz alttan sulama sağlar." },
+            { category: "Structure", name: "Karartma / Nem Kubbesi", en: "Humidity Dome / Blackout Dome", f1: "2-4 Adet", f2: "20-50 Adet", f3: "İstifli Çimlendirme Odası", note: "İlk 3-4 günlük karanlık çimlenme evresinde yüksek nem sağlar." },
+            { category: "Structure", name: "File Saksı (Net Pot)", en: "Hydroponic Net Pots (2\" / 3\")", f1: "10-30 Adet", f2: "100-500 Adet", f3: "1.000+ Adet", note: "Kratky, DWC, NFT ve Aeroponikte bitki boğazını sabit tutar." },
+            { category: "Structure", name: "Opak Rezervuar / NFT Oluk", en: "Food-Grade Lightproof PVC Channels", f1: "10-20 L Kova", f2: "50-200 L Tank + PVC", f3: "1000 L+ Hareketli Oluk", note: "Alg ve Pythium oluşumunu önlemek için %100 ışık geçirmez olmalıdır." },
+            
+            { category: "Lighting", name: "Tam Spektrum LED Bar", en: "Full-Spectrum LED Grow Light Bars", f1: "20W-60W Bar", f2: "Raf başı 2-3 adet 120cm", f3: "Samsung LM301H EVO (≥3.1 µmol/J)", note: "400-700 nm PAR üretimi; ticari ölçekte kısılabilir (dimmable) sürücülü." },
+            { category: "Lighting", name: "Priz Zamanlayıcı / Röle", en: "Digital Outlet Timer / Smart Wi-Fi Relay", f1: "1 Adet Timer", f2: "Dijital Haftalık Timer", f3: "PLC / ESP32 Röle Kartı", note: "16 saat açık / 8 saat kapalı fotoperiyodu gece tarifesine (23:00-08:00) senkronize eder." },
+            
+            { category: "Irrigation", name: "Dalgıç Su Pompası", en: "Submersible Water Pump (DC/AC)", f1: "Mini 5V/12V", f2: "1000-3000 L/h Pompa", f3: "Modülasyonlu Santrifüj Pompa", note: "NFT, DWC sirkülasyonu ve Gel-Git tepsi doldurma operasyonları." },
+            { category: "Irrigation", name: "Hava Pompası & Taş", en: "Aquarium Air Pump & Air Stones", f1: "1 Adet Hava Motoru", f2: "Çok Çıkışlı Diyaframlı Pompa", f3: "Endüstriyel Blower", note: "DWC ve besin tankında çözünmüş oksijeni (DO) maksimumda tutar." },
+            { category: "Irrigation", name: "Yüksek Basınç Aero Seti", en: "80-150 PSI Diaphragm Pump + Nozzles", f1: "Kullanılmaz", f2: "Opsiyonel Ar-Ge Ünitesi", f3: "Tam HPA veya Ultrasonik", note: "20-50 mikron sis üretimi; 1-5 sn ON / 3-5 dk OFF döngü zamanlayıcısı ile." },
+            { category: "Irrigation", name: "Su Arıtma (RO) Sistemi", en: "Reverse Osmosis (RO) Filtration", f1: "Şebeke Suyu", f2: "5 Aşamalı RO Arıtma", f3: "Endüstriyel RO + UV", note: "Şebeke suyundaki kloru, ağır metalleri ve yüksek başlangıç EC'sini sıfırlar." },
+            
+            { category: "HVACD", name: "Yatay Hava Akış Fanı", en: "Horizontal Airflow (HAF) Clip Fans", f1: "1 Adet PC Fanı", f2: "Her katta 2 adet 12cm Fan", f3: "Endüstriyel HAF Dizisi", note: "Marulda tipburn ve küfü önlemek için kanopide 0,5 m/s hava hızı sağlar." },
+            { category: "HVACD", name: "Nem Alma Cihazı", en: "Compressor Dehumidifier", f1: "Oda Havalandırma", f2: "20-50 L/gün Nem Alıcı", f3: "63-240 L/gün Endüstriyel", note: "Bitkilerin m² başına günde saldığı 4-6 L suyu yoğuşturup VPD'yi dengeler." },
+            { category: "HVACD", name: "Klima & Su Soğutucu", en: "Inverter Split AC & Water Chiller", f1: "Oda Sıcaklığı", f2: "9000-18000 BTU Inverter", f3: "HVACD + Chiller", note: "Hava sıcaklığını 20-22°C'de, su sıcaklığını Pythium'a karşı 18-21°C'de tutar." },
+            
+            { category: "Sensors", name: "Dijital pH ve EC Ölçer", en: "Digital pH & EC Conductivity Pen", f1: "1'er Adet Kalem Ölçer", f2: "Prof. Su Geçirmez Problar", f3: "Sürekli Hat İçi (Inline) Prob", note: "Besin suyunun pH (5,5-6,5) ve EC (1,2-2,0 mS/cm) kontrolü; kalibrasyon sıvıları şarttır." },
+            { category: "Sensors", name: "Termo-Higrometre & VPD", en: "Digital Thermo-Hygrometer & IR Leaf Temp", f1: "1 Adet Ölçer", f2: "Wi-Fi Data Logger + IR Termometre", f3: "Kanopi IoT Sensör Ağı", note: "Hava sıcaklığı, bağıl nem ve kızılötesi yaprak sıcaklığı ile gerçek VPD hesabı." },
+            { category: "Sensors", name: "PAR / PPFD Ölçer", en: "Quantum PAR Meter (400-700 nm)", f1: "Telefon Uygulaması", f2: "El Tipi PAR Ölçer", f3: "Spektrometre", note: "Raflarda 9 noktalı PPFD haritalaması ve >0.80 homojenlik doğrulaması." },
+            
+            { category: "Supplies", name: "3'lü Kuru Gübre Seti", en: "Masterblend 4-18-38 + CalNit + Epsom", f1: "1 kg Başlangıç Seti", f2: "5 kg - 25 kg Çuval Set", f3: "25 kg Endüstriyel Çuval", note: "2:1:2 oranında en ekonomik tam besin çözeltisi." },
+            { category: "Supplies", name: "pH Düşürücü (pH Down)", en: "pH Down (Phosphoric / Nitric Acid)", f1: "250 ml Sıvı", f2: "1 - 5 Litre Bidon", f3: "20 Litre Dozaj Bidonu", note: "Türkiye şebeke suları genellikle alkali olduğundan en çok tüketilen sarftır." },
+            { category: "Supplies", name: "Kök Koruyucu Sanitasyon", en: "Hypochlorous Acid (HOCl) / Beneficial Bacteria", f1: "H₂O₂ (%3-%12)", f2: "Hipokloröz Asit (HOCl)", f3: "Otomatik HOCl veya Biyolojik", note: "Pythium önleme ve hijyen (Steril ve Biyolojik ürünler karıştırılmaz!)." }
+        ];
+
+        // System Architecture Display Content
+        const archDetails = {
+            kratky: "<strong>Kratky Yöntemi (Pasif):</strong> Elektrik veya pompa gerektirmeyen durgun su sistemi. Bitki büyüdükçe su seviyesi aşağı iner, oluşan nemli hava boşluğu oksijen ihtiyacını karşılar. Kısa döngülü marul ve fesleğen için sıfır maliyetli mükemmel başlangıçtır.",
+            dwc: "<strong>Derin Su Kültürü (DWC):</strong> Kökler sürekli havalandırılan besin çözeltisi içinde durur. Hava motoru ve hava taşları kesintisiz kabarcık basar. Su kütlesi büyük olduğu için pH ve sıcaklık dalgalanmalarına karşı yüksek tamponlama sağlar.",
+            nft: "<strong>Besin Filmi Tekniği (NFT):</strong> Eğimli oluklardan ince bir film tabakası halinde besinli su akar. Köklerin üst kısmı havayla temas ederek yüksek oksijen alır. Dikey raflarda hafiftir, ancak elektrik kesintilerinde kökler saatler içinde kurur.",
+            hpa: "<strong>Yüksek Basınçlı Aeroponik (HPA - NASA Standardı):</strong> 60-150 PSI basınçlı nozullarla 20-50 mikron çapında sis üretilir. Kökler zamanın %75'inde yüksek oksijenli havada asılı kalır. Su ve gübre kullanımında maksimum verimlilik sunar."
+        };
+
+        // Charts Initialization State
+        let chartBankruptcy, chartElectricity, chartTariff;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            initCharts();
+            renderBOMTable(bomData);
+            showArch('kratky');
+            calcDLI();
+            calcMasterblend();
+            calcVPD();
+            calc1020();
+            calcTariffArbitrage();
+        });
+
+        // Tab Switcher Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // System Architecture Display Handler
+        function showArch(type) {
+            document.querySelectorAll('.arch-btn').forEach(btn => {
+                btn.classList.remove('border-brand-600', 'bg-brand-50', 'text-brand-800');
+            });
+            document.getElementById('btn-' + type).classList.add('border-brand-600', 'bg-brand-50', 'text-brand-800');
+            document.getElementById('arch-details').innerHTML = archDetails[type];
+        }
+
+        // TOOL 1: DLI Calculator
+        function calcDLI() {
+            const ppfd = parseFloat(document.getElementById('ppfd-input').value);
+            const hours = parseFloat(document.getElementById('hours-input').value);
+            
+            document.getElementById('ppfd-val').innerText = ppfd;
+            document.getElementById('hours-val').innerText = hours;
+
+            const dli = (ppfd * hours * 3600) / 1000000;
+            document.getElementById('dli-result').innerText = dli.toFixed(2) + " mol·m⁻²·gün⁻¹";
+
+            let evalText = "";
+            if (dli < 6) evalText = "Mikroyeşillik çimlenme evresi için uygun, yetişkin yeşillik için yetersiz.";
+            else if (dli <= 10) evalText = "Mikroyeşillikler ve hafif otlar (fesleğen, nane) için ideal.";
+            else if (dli <= 15) evalText = "Tam boy marul ve yapraklı yeşillikler için mükemmel hedef.";
+            else evalText = "Yüksek ışık seviyesi (Çilek, bodur domates / biber üretimi için uygun).";
+
+            document.getElementById('dli-eval').innerText = evalText;
+        }
+
+        // TOOL 2: Masterblend Calculator
+        function calcMasterblend() {
+            const liters = parseFloat(document.getElementById('water-liters').value) || 0;
+            const mode = document.getElementById('mb-mode').value;
+
+            // Base ratios per 10 Liters
+            // Standard (EC ~2.0): MB 6.34g, Epsom 3.17g, CalNit 6.34g
+            // Light (EC ~1.2): MB 3.80g, Epsom 1.90g, CalNit 3.80g
+            let factor = (mode === 'standard') ? 0.634 : 0.380;
+            let epsomFactor = (mode === 'standard') ? 0.317 : 0.190;
+
+            let mb = liters * factor;
+            let epsom = liters * epsomFactor;
+            let calnit = liters * factor;
+
+            document.getElementById('mb-gram').innerText = mb.toFixed(2) + " g";
+            document.getElementById('epsom-gram').innerText = epsom.toFixed(2) + " g";
+            document.getElementById('calnit-gram').innerText = calnit.toFixed(2) + " g";
+        }
+
+        // TOOL 3: VPD Calculator
+        function calcVPD() {
+            const T = parseFloat(document.getElementById('temp-input').value);
+            const RH = parseFloat(document.getElementById('rh-input').value);
+
+            document.getElementById('temp-val').innerText = T;
+            document.getElementById('rh-val').innerText = RH;
+
+            // Tetens equation for SVP
+            const SVP = 0.6108 * Math.exp((17.27 * T) / (T + 237.3));
+            const AVP = SVP * (RH / 100);
+            const VPD = SVP - AVP;
+
+            const resElem = document.getElementById('vpd-result');
+            const statusElem = document.getElementById('vpd-status');
+
+            resElem.innerText = VPD.toFixed(2) + " kPa";
+
+            if (VPD < 0.5) {
+                resElem.className = "text-2xl font-black text-red-600";
+                statusElem.innerText = "🚨 Tehlike: Aşırı Nemli! Terleme Durdu (Tipburn & Küf Riski)";
+                statusElem.className = "text-xs font-semibold text-red-600 mt-1";
+            } else if (VPD <= 1.2) {
+                resElem.className = "text-2xl font-black text-brand-800";
+                statusElem.innerText = "✅ Optimum Hedef Pencere (0.8 - 1.2 kPa)";
+                statusElem.className = "text-xs font-semibold text-brand-800 mt-1";
+            } else {
+                resElem.className = "text-2xl font-black text-amber-600";
+                statusElem.innerText = "⚠️ Uyarı: Aşırı Kuru! Stomalar Kapanıyor (Gelişim Yavaşlar)";
+                statusElem.className = "text-xs font-semibold text-amber-600 mt-1";
+            }
+        }
+
+        // TOOL 4: 1020 Microgreen Calculator
+        function calc1020() {
+            const trays = parseInt(document.getElementById('tray-count').value) || 0;
+            const crop = document.getElementById('crop-type').value;
+            const price = parseFloat(document.getElementById('tray-price').value) || 0;
+
+            // COGS profiles per tray
+            let seedCost = 1.50; // default average
+            if (crop === 'radish') seedCost = 0.77;
+            if (crop === 'sunflower') seedCost = 2.20;
+            if (crop === 'pea') seedCost = 2.10;
+            if (crop === 'broccoli') seedCost = 0.75;
+
+            const mediaCost = 0.50; // soil/coco per tray
+            const directCOGS = (seedCost + mediaCost) * trays;
+
+            const loadedCostPerTray = 8.66; // Fully loaded cost including labor, electric, amort.
+            const totalLoadedCost = loadedCostPerTray * trays;
+
+            const revenue = trays * price;
+            const profit = revenue - totalLoadedCost;
+
+            document.getElementById('res-revenue').innerText = "$" + revenue.toFixed(2);
+            document.getElementById('res-cogs').innerText = "$" + directCOGS.toFixed(2);
+            document.getElementById('res-loaded').innerText = "$" + totalLoadedCost.toFixed(2);
+            document.getElementById('res-profit').innerText = "$" + profit.toFixed(2);
+        }
+
+        // TOOL 5: EPDK Tariff Arbitrage Calculator
+        function calcTariffArbitrage() {
+            const yieldKg = parseFloat(document.getElementById('monthly-yield').value) || 0;
+            const kwhPerKg = parseFloat(document.getElementById('efficiency-kwh').value);
+
+            const totalKwh = yieldKg * kwhPerKg;
+
+            // EPDK Approx Rates (Vergiler Dahil)
+            // Day/Peak blend rate ~6.50 TL/kWh
+            // Night T3 rate ~3.26 TL/kWh
+            const dayRate = 6.50;
+            const nightRate = 3.26;
+
+            const costDay = totalKwh * dayRate;
+            const costNight = totalKwh * nightRate;
+            const savings = costDay - costNight;
+
+            document.getElementById('cost-day').innerText = Math.round(costDay).toLocaleString('tr-TR') + " ₺";
+            document.getElementById('cost-night').innerText = Math.round(costNight).toLocaleString('tr-TR') + " ₺";
+            document.getElementById('cost-savings').innerText = Math.round(savings).toLocaleString('tr-TR') + " ₺ / Ay";
+        }
+
+        // BOM Filter Handler
+        function filterBOM() {
+            const search = document.getElementById('bom-search').value.toLowerCase();
+            const cat = document.getElementById('bom-filter-cat').value;
+
+            const filtered = bomData.filter(item => {
+                const matchesCat = (cat === 'all') || (item.category === cat);
+                const matchesSearch = item.name.toLowerCase().includes(search) || 
+                                      item.en.toLowerCase().includes(search) || 
+                                      item.note.toLowerCase().includes(search);
+                return matchesCat && matchesSearch;
+            });
+
+            renderBOMTable(filtered);
+        }
+
+        function renderBOMTable(data) {
+            const tbody = document.getElementById('bom-tbody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-stone-500">Aramanıza uygun malzeme bulunamadı.</td></tr>';
+                return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-stone-50 border-b border-stone-200';
+                tr.innerHTML = `
+                    <td class="p-2.5 font-semibold text-stone-600">${item.category}</td>
+                    <td class="p-2.5 font-bold text-stone-900">${item.name}</td>
+                    <td class="p-2.5 text-stone-500 italic">${item.en}</td>
+                    <td class="p-2.5 text-stone-800">${item.f1}</td>
+                    <td class="p-2.5 text-stone-800">${item.f2}</td>
+                    <td class="p-2.5 text-brand-800 font-medium">${item.f3}</td>
+                    <td class="p-2.5 text-stone-600 leading-tight">${item.note}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Chart Initialization
+        function initCharts() {
+            // Chart 1: Bankruptcy VC Capital vs Debt
+            const ctx1 = document.getElementById('chartBankruptcy').getContext('2d');
+            chartBankruptcy = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Plenty Unlimited', 'Bowery Farming', 'AppHarvest', 'AeroFarms', 'Infarm'],
+                    datasets: [{
+                        label: 'Toplanan Yatırım / Borç Yükü ($ Milyon)',
+                        data: [940, 700, 341, 300, 400],
+                        backgroundColor: ['#16a34a', '#dc2626', '#ea580c', '#d97706', '#2563eb'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '$ Milyon', font: { size: 10 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Electricity Usage Breakdown
+            const ctx2 = document.getElementById('chartElectricity').getContext('2d');
+            chartElectricity = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['LED Aydınlatma (%78)', 'HVACD İklimlendirme (%15)', 'Sirkülasyon & Pompalar (%7)'],
+                    datasets: [{
+                        data: [78, 15, 7],
+                        backgroundColor: ['#16a34a', '#0284c7', '#d97706']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                    }
+                }
+            });
+
+            // Chart 3: EPDK Tariffs Comparison
+            const ctx3 = document.getElementById('chartTariff').getContext('2d');
+            chartTariff = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['T3 Gece (23:00-08:00)', 'T2 Gündüz (08:00-17:00)', 'T1 Puant (17:00-22:00)'],
+                    datasets: [{
+                        label: 'Çıplak Aktif Enerji Bedeli (Kuruş/kWh)',
+                        data: [51.37, 195.06, 374.76],
+                        backgroundColor: ['#16a34a', '#d97706', '#dc2626'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Kuruş / kWh', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
