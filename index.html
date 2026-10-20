@@ -94,6 +94,10 @@
   .chk{display:flex;align-items:center;gap:7px;font-size:11.5px;padding:6px 0}
   .chk input{accent-color:var(--green);width:15px;height:15px}
   .side-note{font-size:10.5px;color:var(--muted);line-height:1.5;padding:10px 4px}
+  .info{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:4px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--muted);font-size:9px;line-height:1;cursor:pointer;padding:0;vertical-align:1px}
+  .info:hover{background:var(--green-soft);color:var(--green);border-color:#c7dcc4}
+  .help{font-size:10.5px;color:var(--muted);line-height:1.5;background:var(--surface2);border-left:2px solid var(--green2);padding:6px 8px;border-radius:0 6px 6px 0;margin-top:5px}
+  .help[hidden]{display:none}
 
   /* panels */
   .main{min-width:0;scroll-margin-top:120px}
@@ -200,7 +204,7 @@
 
   /* simulation */
   .sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:14px;align-items:start}
-  .sim-stage{position:relative;height:min(66vh,600px);min-height:430px;border-radius:14px;overflow:hidden;background:#171a15;border:1px solid #262b23}
+  .sim-stage{position:relative;height:min(60vh,560px);min-height:420px;border-radius:14px;overflow:hidden;background:#171a15;border:1px solid #262b23}
   .sim-stage canvas{display:block;width:100%;height:100%}
   .sim-hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;max-width:calc(100% - 24px)}
   .sim-chip{background:rgba(18,22,17,.78);border:1px solid rgba(255,255,255,.13);color:#e8eee2;padding:6px 9px;border-radius:8px;font-size:11px;line-height:1.25}
@@ -228,6 +232,30 @@
   .log div:last-child{border-bottom:0}
   .log .d{color:var(--muted);font-variant-numeric:tabular-nums}
   .log .warn{color:var(--amber)}
+  .intro{display:flex;gap:10px;align-items:flex-start;background:var(--green-soft);border:1px solid #cfe0cb;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--green);margin-bottom:12px;line-height:1.55}
+  .intro b{font-weight:600}
+  .intro .acts{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
+  .intro .btn{background:var(--surface);padding:4px 8px;font-size:11px}
+  .intro[hidden]{display:none}
+
+  /* guide */
+  .guide details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 14px;margin-bottom:8px}
+  .guide summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+  .guide summary::-webkit-details-marker{display:none}
+  .guide summary::after{content:"+";color:var(--muted);font-weight:400}
+  .guide details[open] summary::after{content:"–"}
+  .guide details[open] summary{border-bottom:1px solid var(--line);margin-bottom:10px}
+  .guide .body{font-size:12.5px;color:var(--muted);line-height:1.68;padding-bottom:12px}
+  .guide .body b,.guide .body strong{color:var(--ink)}
+  .guide .body ul,.guide .body ol{padding-left:18px;margin:6px 0 8px}
+  .guide .body li{margin-bottom:4px}
+  .guide .body p{margin-bottom:8px}
+  .guide .steps{counter-reset:s;list-style:none;padding:0}
+  .guide .steps li{counter-increment:s;position:relative;padding-left:26px;margin-bottom:7px}
+  .guide .steps li::before{content:counter(s);position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:10px;display:grid;place-items:center;font-weight:600}
+  .glossary{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
+  .glossary div{padding:6px 0;border-bottom:1px dotted var(--line);font-size:11.5px;color:var(--muted);line-height:1.5}
+  .glossary b{display:block;color:var(--ink);font-size:12px;margin-bottom:1px}
 
   footer{border-top:1px solid var(--line);background:var(--surface);padding:16px 0 26px;margin-top:8px}
   footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
@@ -263,6 +291,9 @@
     .bar-row{grid-template-columns:92px minmax(0,1fr) 64px}
     .tor-row{grid-template-columns:92px minmax(0,1fr) 82px}
     .unit-grid{grid-template-columns:1fr}
+    .glossary{grid-template-columns:1fr}
+    .intro{flex-direction:column}
+    .intro .acts{margin-left:0}
     .sim-stage{height:380px;min-height:320px}
     .sim-chip b{font-size:12.5px}
     .sim-chip span{font-size:8.5px}
@@ -320,6 +351,7 @@
     <section class="panel" data-panel="ekonomi" hidden></section>
     <section class="panel" data-panel="risk" hidden></section>
     <section class="panel" data-panel="kiyas" hidden></section>
+    <section class="panel" data-panel="rehber" hidden></section>
     <section class="panel" data-panel="notlar" hidden></section>
   </main>
 </div>
@@ -1139,6 +1171,172 @@ function selfTest(){
   return out;
 }
 
+function renderRehber(){
+  const panel = document.querySelector('[data-panel="rehber"]');
+  if (panel.dataset.built) return;
+  panel.dataset.built = '1';
+  const cropRows = Object.entries(CROPS).map(([k,c])=>`
+    <tr>
+      <td><b>${c.name}</b><br><span class="muted" style="font-size:10.5px">${c.market}</span></td>
+      <td>${badge(c.difficulty, c.difficulty==='Kolay'?'green':c.difficulty==='Orta'?'amber':'red')}</td>
+      <td class="r">${c.cycle} gün</td>
+      <td class="r">${nf(c.yield,1)}</td>
+      <td class="r">${fmtTL(c.price)}</td>
+      <td class="r">${nf(c.tray,0)} g</td>
+    </tr>`).join('');
+
+  document.querySelector('[data-panel="rehber"]').innerHTML = `
+    <div class="card guide">
+      <div class="card-head"><h3>Sıfırdan başlayanlar için rehber</h3><span class="sub">7 bölüm · sözlük · 30 gün planı</span></div>
+      <p class="lead" style="margin-bottom:12px">Bu bölüm, dikey tarımı hiç bilmeyen biri için yazıldı. Terim ilk geçtiğinde parantez içinde açıklanır; en altta sözlük var. Sayılar 2026 Türkiye varsayımıdır ve soldaki panelden değiştirilebilir.</p>
+
+      <details open>
+        <summary>1 · Dikey tarım nedir, ne değildir?</summary>
+        <div class="body">
+          <p>Dikey tarım, güneş yerine <b>LED</b>, toprak yerine <b>su kültürü</b> kullanarak kapalı bir odada bitki yetiştirmektir. Doğru adı <b>CEA</b> (kontrollü ortam tarımı). Işık, sıcaklık, nem, su ve besin tamamen sizin kontrolünüzdedir.</p>
+          <p>Üç gerçek her şeyi belirler:</p>
+          <ul>
+            <li><b>Güneş bedava, elektrik değil.</b> Tesisin kaderi <b>kWh/kg</b> ile yazılır. 18 kWh/kg ile marul üretmek, 8 kWh/kg ile üretmene göre iki kat fazla enerji harcar.</li>
+            <li><b>Düşük fiyatlı ürün küçük tesiste marj bırakmaz.</b> Market marulu 60 ₺/kg ise, 500 ₺/kg maliyetle satamazsınız. Mikroyeşillik ve aromatikler bu yüzden öne çıkar.</li>
+            <li><b>Ürünü üretmeden alıcıyı bulun.</b> Haftalık 60 kg mikroyeşillik satacak restoran yoksa, üretim sadece stok üretir.</li>
+          </ul>
+          <p><b>Nerede mantıklı:</b> şehir içinde taze teslimat, yüksek fiyatlı ürün, kısa döngü, hafif ve hızlı bozulan ürün, restoran/şef kanalı, yıl boyu süreklilik.<br>
+          <b>Nerede zor:</b> standart emtia, büyük CAPEX, tek alıcı, yüksek elektrik zammı, deneyimsiz ekim planlaması.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>2 · Hangi sistemle başlamalı?</summary>
+        <div class="body">
+          <table class="tbl">
+            <thead><tr><th>Sistem</th><th>Nasıl çalışır</th><th>Kesinti toleransı</th><th>Kim için</th></tr></thead>
+            <tbody>
+              <tr><td><b>Kratky</b></td><td>Durgun su, pompa yok. Kökler nemli hava boşluğundan oksijen alır.</td><td>Günler</td><td>İlk deneme, 1–4 tepsi</td></tr>
+              <tr><td><b>DWC</b></td><td>Kökler havalandırılmış suyun içinde. Hava taşı sürekli çalışır.</td><td>Yüksek</td><td>Yeni başlayan, marul/ot</td></tr>
+              <tr><td><b>NFT</b></td><td>Eğimli olukta 1–3 mm su filmi akar.</td><td>Düşük (saatler)</td><td>Raf sistemleri, ticari</td></tr>
+              <tr><td><b>Ebb & Flow</b></td><td>Tepsiyi periyodik doldurup boşaltır.</td><td>Orta</td><td>Mikroyeşillik, fide</td></tr>
+              <tr><td><b>HPA</b></td><td>60–150 PSI ile 20–50 µm sis. Kökler havada asılı.</td><td>Çok düşük (dakikalar)</td><td>İleri seviye, yedek pompa şart</td></tr>
+            </tbody>
+          </table>
+          <p><b>Öneri:</b> ilk kurulumda DWC veya NFT. Bir tepside Kratky deneyi yapın; HPA’ya ölçüm, alarm ve yedek pompa olmadan geçmeyin. Sistem seçimi modelde verim, CAPEX, su ve kesinti riskini birlikte değiştirir.</p>
+          <p><b>Su sıcaklığı</b> her sistemde 18–21 °C olmalı. 22 °C üzerinde çözünmüş oksijen düşer ve <b>Pythium</b> (kök çürüklüğü) patlar.</p>
+        </div>
+      </details>
+
+      <details open>
+        <summary>3 · Işık: PPFD, DLI ve fotoperiyot</summary>
+        <div class="body">
+          <p><b>PPFD</b> (µmol/m²/s) bitkiye saniyede ulaşan ışık miktarıdır. <b>Fotoperiyot</b> günde kaç saat ışık verildiğidir. İkisinin çarpımı <b>DLI</b>’yi verir:</p>
+          <p><span class="code">DLI = PPFD × saat × 0.0036</span></p>
+          <p>Örnek: 220 PPFD × 16 saat × 0.0036 = <b>12,7 mol/m²·gün</b>. Bu, tam boy marul ve yapraklı yeşillik için iyi bir hedeftir.</p>
+          <ul>
+            <li>Mikroyeşillik: 6–12 mol</li>
+            <li>Marul, roka, ıspanak: 12–16 mol</li>
+            <li>Fesleğen, maydanoz, nane: 12–18 mol</li>
+            <li>Çilek: 16–22 mol</li>
+          </ul>
+          <p><b>Aynı DLI’yi daha ucuza üretmek:</b> PPFD’yi düşürüp fotoperiyodu uzatmak ısıyı azaltır ama 24 saate çıkmak çoğu üründe verim getirmez. Işığı 22:00–14:00 penceresine almak, 10 saat T3 gece tarifesinden yararlanır.</p>
+          <p><b>LED seçimi:</b> 3.1 µmol/J üzeri verimli sayılır. Işık homojenliği de önemlidir; rafın 9 noktasında PPFD ölçüp en düşük/en yüksek oranını 0.8’in üzerinde tutun.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>4 · İklim: VPD, nem ve su sıcaklığı</summary>
+        <div class="body">
+          <p><b>VPD</b> (buhar basıncı açığı), havanın bitkiden ne kadar su çekebileceğini gösterir. 0.8–1.2 kPa çoğu yapraklı ürün için tatlı noktadır.</p>
+          <ul>
+            <li><b>Düşük VPD (&lt;0.5):</b> bitki terleyemez. Kalsiyum genç yapraklara taşınamaz; iç yaprakta <b>tipburn</b> (uç yanığı) ve damlacık (<b>guttation</b>) görülür. Küf riski artar.</li>
+            <li><b>Yüksek VPD (&gt;1.3):</b> stomalar kapanır, fotosentez durur, yaprak kenarları kurur.</li>
+          </ul>
+          <p>Nem ve sıcaklık birlikte ayarlanır. Sadece nemi yükseltmek VPD’yi düzeltmez; hava sıcaklığı da düşmelidir. Kanopide 0.3–0.5 m/s hava hareketi küf ve sıcak noktaları önler.</p>
+          <p><b>Pythium protokolü:</b> su 18–21 °C, tank ışıktan uzak, düzenli temizlik. Steril dezenfektan (HOCl, H₂O₂) ile biyolojik koruyucu (Bacillus, Trichoderma) <b>asla birlikte kullanılmaz</b>; HOCl faydalı bakterileri saniyeler içinde öldürür.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>5 · Besin: EC, pH ve karıştırma sırası</summary>
+        <div class="body">
+          <p><b>EC</b> suyun tuz/bitki besini yoğunluğudur. <b>pH</b> besinlerin bitki tarafından alınabilirliğini belirler. Hedefler: EC 1.2–2.0 mS/cm, pH 5.5–6.5.</p>
+          <p><b>Masterblend 2:1:2</b> (10 litre için): 6.34 g Masterblend 4-18-38 + 3.17 g magnezyum sülfat (Epsom) + 6.34 g kalsiyum nitrat. Hafif karışım için 3.8 / 1.9 / 3.8 g.</p>
+          <p><b>Karıştırma sırası:</b> su → Masterblend (tam çözün) → Epsom → en son kalsiyum nitrat. Kalsiyum nitrat ile sülfat/fosfat toz halde asla karıştırılmaz; çökelme olur ve besin kaybolur.</p>
+          <p><b>Su:</b> şebeke suyu klor ve yüksek başlangıç EC’si getirir. RO (ters ozmoz) kullanılıyorsa kalsiyum/magnezyum mutlaka eklenmelidir. pH düşürücü olarak fosforik veya nitrik asit kullanın.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>6 · Para: birim ekonomi ve satış</summary>
+        <div class="body">
+          <p><b>Tam maliyet</b> = değişken giderler + sabit giderler + amortisman + faiz. Bunu üretilen kg’a bölerseniz <b>₺/kg</b> çıkar. Satış fiyatı bunun altındaysa her satış zarar yazar.</p>
+          <ul>
+            <li><b>Başabaş fiyat:</b> mevcut hacim ve giderle kâra geçilen fiyat.</li>
+            <li><b>kWh/kg:</b> enerji verimliliği. 8’in altı iyi, 12 üzeri riskli.</li>
+            <li><b>kg/m²·yıl:</b> alan verimliliği. Mikroyeşillikte 80–100 kg, marulda 40–70 kg tipiktir.</li>
+            <li><b>Geri ödeme:</b> net yatırımın kaç ayda geri döndüğü. 24 aydan uzunse iş modelini yeniden düşünün.</li>
+          </ul>
+          <p><b>Kanal seçimi:</b> restoran/şef en yüksek fiyatı verir ama haftalık istikrar ister. Perakende hacim getirir, raf ömrü ister. Toptan fiyatı yarıya indirir. Online/abonelik en iyi marjı verebilir ama paketleme ve teslimat yükü sizde.</p>
+          <p><b>Türkiye araçları:</b> KKYDP’de kapalı dikey tarım için dekar kısıtı yok; IPARD III’te inşaat ve ekipmanda KDV muafiyeti var; Ziraat Bankası genç çiftçi kredisinde %100 faiz indirimi mümkün. Oranlar dönemseldir, resmî rehberden doğrulayın.</p>
+          <p><b>Altın kural:</b> tek oda pozitif birim ekonomiye geçmeden ikinci odaya yatırım yapmayın.</p>
+        </div>
+      </details>
+
+      <div class="card" style="margin:12px 0">
+        <div class="card-head"><h3>Mahsul kataloğu</h3><span class="sub">14 ürün · 2026 tahmini</span></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Mahsul / pazar</th><th>Zorluk</th><th class="r">Döngü</th><th class="r">kg/m²</th><th class="r">₺/kg</th><th class="r">Tepsi</th></tr></thead>
+            <tbody>${cropRows}</tbody>
+          </table>
+        </div>
+        <div class="hint" style="margin-top:8px">Kolay üretmek, kolay kâr etmek demek değildir. Küçük odada işçilik ve kira sabittir; kg/m² düşük üründe birim maliyet yükselir. Bu yüzden modelde işçilik ve alanı birlikte değiştirin.</div>
+      </div>
+
+      <details open>
+        <summary>7 · İlk 30 gün planı</summary>
+        <div class="body">
+          <ol class="steps">
+            <li><b>3 alıcıyla konuşun.</b> Haftalık kg, fiyat ve teslim gününü yazılı hale getirin. Sözleşme yoksa ekim yapmayın.</li>
+            <li><b>Tek mahsul seçin.</b> Turp, tere veya roka ile başlayın; 6–21 gün arasında geri bildirim alırsınız.</li>
+            <li><b>Bir raf, 4 tepsi.</b> 2 hafta boyunca günlük sıcaklık, nem, EC, pH ve hasat gramajını kaydedin.</li>
+            <li><b>Ölçüm cihazlarını kalibre edin.</b> pH ve EC kalibrasyon sıvısı olmadan ölçüm yapmayın.</li>
+            <li><b>Su sıcaklığını sabitleyin.</b> 18–21 °C. Yaz aylarında chiller veya tank yalıtımı şart.</li>
+            <li><b>Maliyet tablosunu doldurun.</b> Tohum, elektrik, su, ambalaj, kira, işçilik. Modeli kendi sayılarınızla güncelleyin.</li>
+            <li><b>30. gün kararı.</b> Tek oda tam maliyetle kârlı mı? Değilse ölçek büyütmeyin; fiyat, verim veya gider kalemini düzeltin.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary>Sözlük · 20 terim</summary>
+        <div class="body">
+          <div class="glossary">
+            <div><b>CEA</b> Kontrollü ortam tarımı; ışık, iklim ve besin kapalı ortamda yönetilir.</div>
+            <div><b>Hidroponik</b> Topraksız, besin çözeltisiyle üretim.</div>
+            <div><b>Aeroponik</b> Köklerin havada sisle beslenmesi.</div>
+            <div><b>NFT</b> İnce su filminin olukta aktığı sistem.</div>
+            <div><b>DWC</b> Köklerin havalandırılmış suda durduğu derin su kültürü.</div>
+            <div><b>Kratky</b> Pompasız, durgun su ve nemli hava boşluğu.</div>
+            <div><b>HPA</b> Yüksek basınçlı aeroponik; 20–50 µm sis.</div>
+            <div><b>PPFD</b> Bitkiye ulaşan ışık akısı, µmol/m²/s.</div>
+            <div><b>DLI</b> Günlük ışık integrali, mol/m²/gün.</div>
+            <div><b>PAR</b> Fotosentezde kullanılan 400–700 nm ışık bandı.</div>
+            <div><b>VPD</b> Buhar basıncı açığı; terleme itkisi, kPa.</div>
+            <div><b>EC</b> Elektriksel iletkenlik; besin yoğunluğu, mS/cm.</div>
+            <div><b>pH</b> Asitlik/bazlık; besin alınabilirliği.</div>
+            <div><b>Tipburn</b> Kalsiyum eksikliğinden iç yaprak uç yanığı.</div>
+            <div><b>Guttation</b> Yaprak ucundan su damlacığı çıkması; düşük VPD işareti.</div>
+            <div><b>Pythium</b> Kök çürüklüğü yapan su kaynaklı patojen.</div>
+            <div><b>DO</b> Çözünmüş oksijen; kök sağlığı için kritik.</div>
+            <div><b>Off-take</b> Üretim öncesi alım garantisi sözleşmesi.</div>
+            <div><b>Birim ekonomi</b> kg veya tepsi başına gelir, maliyet ve kâr.</div>
+            <div><b>kWh/kg</b> Bir kg ürün için harcanan elektrik; tesisin kaderi.</div>
+          </div>
+        </div>
+      </details>
+
+      <p class="hint" style="margin-top:10px">Bu rehber karar destek amaçlıdır; yatırım tavsiyesi değildir. Nihai karar öncesi tedarikçi teklifi, kira kontratı, EPDK tarifesi ve hibe başvuru rehberiyle doğrulayın.</p>
+    </div>`;
+}
+
 function renderNotlar(){
   const tests = testResults.map(t=>`<div class="alert ${t.ok?'green':'red'}" style="padding:7px 9px">
     <span class="dot"></span><div><b>${t.ok?'geçti':'kaldı'} · ${t.n}</b><small>${t.d||''}</small></div>
@@ -1160,6 +1358,7 @@ function renderNotlar(){
         <h3 style="margin:14px 0 8px">Varsayımlar ve sınırlar</h3>
         <ul>
           <li>Kararlı hâl (steady state) hesabı; ilk yıl rampası yalnızca 5 yıllık projeksiyonda.</li>
+          <li>Günlük simülasyon aynı hesap motorunu kullanır; 120 günlük koşu ekonomik projeksiyonun yerine geçmez, onu gün gün görselleştirir.</li>
           <li>Elektrik tarifeleri, asgari ücret ve hibe oranları 2026 tahminidir; kendi faturanızla değiştirin.</li>
           <li>HVAC yükü LED yükünün katsayısı olarak modellenir; saatlik dış sıcaklık simüle edilmez.</li>
           <li>Fiyat ve maliyet eskalasyonu tek oranla uygulanır; ürün bazlı enflasyon farkı yoktur.</li>
@@ -1266,12 +1465,69 @@ const GROUPS = [
   ]}
 ];
 
+const HELP = {
+  footprintM2:'Odanın taban alanı. Raf katıyla çarpılır, koridor payı düşülerek gerçek ekim alanı bulunur. 12 m² bir oda, 4 katla yaklaşık 41 m² yatak alanı verir.',
+  tiers:'Üst üste kaç raf katı olacağı. Kat arttıkça aynı taban alanından daha çok ürün çıkar; ama ışık, hava ve erişim zorlaşır. Sahne en fazla 5 kat gösterir.',
+  rentM2Month:'Aylık metrekare kirası. Kendi mülkünüzde 0 girin. Kira, küçük tesislerde en çok gözden kaçan giderdir.',
+  city:'İl; dış iklim katsayısını (HVAC yükü) ve IPARD III uygunluğunu belirler. Sıcak illerde soğutma daha çok elektrik yakar.',
+  insulation:'Odanın ısı yalıtımı. 1 standart kabul edilir; iyi yalıtılmış oda 0.7, zayıf/yalıtımsız oda 1.4. HVAC tüketimini doğrudan çarpar.',
+  crop:'Mahsul seçimi döngü, verim, fiyat, tohum maliyeti ve ışık ihtiyacını birlikte getirir. Yeni başlıyorsanız Kolay etiketli ürünlerle başlayın.',
+  cycleDays:'Ekimden hasada kadar geçen gün. Kısa döngü aynı raftan yılda daha çok tur ve daha hızlı nakit demektir.',
+  yieldKgM2Cycle:'Bir metrekare yatakta bir döngüde çıkan ürün. Kendi ölçümünüz yoksa bu değeri temkinli kullanın; modeli kendi saha verinizle güncelleyin.',
+  priceTLkg:'Referans satış fiyatı. Kanal katsayısı (restoran/perakende/toptan) ayrıca uygulanır; KPI’da gördüğünüz fiyat bu ikisinin çarpımıdır.',
+  channel:'Satış kanalı fiyat çarpanı. Restoran/şef 1.15, perakende 1.00, online 1.05, toptan 0.52. Toptan hacim getirir ama marjı taşımaz.',
+  demandKgWeek:'Haftada gerçekten satabileceğiniz kg. Model üretimi taleple sınırlar; satılamayan ürün gelir üretmez. Off-take sözleşmesi bu sayının temelidir.',
+  wastePct:'Hasat, paketleme, nakliye ve iade kaybı. Mikroyeşillikte %5–10 normaldir; uzun raf ömrü olmayan üründe daha yüksek.',
+  utilizationPct:'Tepsilerin ne kadarının dolu olduğu. Boş bekleyen raf, ödenen kira ve işçiliği boşa harcar.',
+  seedCostM2Cycle:'Tohum veya fide maliyeti. Mikroyeşillikte toplu alım (25 lb çuval) tepsi başı maliyeti %90’a kadar düşürebilir.',
+  nutrientTLkg:'Gübre ve su maliyeti (üretilen kg başına). HPA gibi sistemlerde su azalır; EC takibi maliyeti kontrol eder.',
+  waterLPerKg:'1 kg ürün için harcanan su. HPA’da yaklaşık %40 daha az; NFT/DWC’de daha yüksek.',
+  ppfd:'Bitkiye ulaşan ışık yoğunluğu (µmol/m²/s). Artırmak hem büyümeyi hem elektrik tüketimini artırır.',
+  photoperiod:'Günde kaç saat ışık verileceği. DLI’yi belirler; 24 saat ışık çoğu mahsulde verim getirmez, enerjiyi boşa harcar.',
+  lightStart:'Işığın açıldığı saat. 22:00 başlangıcı T3 gece tarifesine denk gelir; aynı DLI daha ucuza üretilir.',
+  ledEfficacy:'LED’in elektriği foton enerjisine çevirme verimi (µmol/J). 3.1 üzeri iyi, 2.8 altı eski nesil sayılır.',
+  dimmerPct:'LED gücünü kısma oranı. DLI’yi düşürür; verim düşerken kWh/kg değişebilir, ikisini birlikte izleyin.',
+  tempC:'Hava sıcaklığı. Fotosentez hızını ve VPD’yi belirler. Çoğu yapraklı ürün için 20–24 °C bandı uygundur.',
+  rhPct:'Bağıl nem. VPD’nin diğer yarısıdır; tek başına değil sıcaklıkla birlikte ayarlanmalıdır.',
+  waterTempC:'Kök bölgesindeki su sıcaklığı. 22 °C üzerinde çözünmüş oksijen düşer ve Pythium patlar. 18–21 °C hedefleyin.',
+  hvacFactor:'Soğutma ve nem alma yükünün LED yüküne oranı. LED ısısı odanın ana ısı kaynağıdır; yalıtım ve dış iklim bunu büyütür.',
+  system:'Sistem; verim, CAPEX, su tüketimi ve elektrik kesintisi riskini değiştirir. Kratky en ucuz ve en toleranslı, HPA en verimli ama en kırılgandır.',
+  pumpKwhDay:'Pompa, kontrol ve sensörlerin günlük elektriği. Sistem değişince otomatik önerilir; kendi ölçümünüzle değiştirebilirsiniz.',
+  grantPct:'KKYDP / IPARD hibe oranı. Modelde uygun CAPEX’in %80’ine uygulanır; kalan kısım özkaynak veya krediyle karşılanır.',
+  vatExempt:'IPARD III kapsamında inşaat ve ekipmanda KDV muafiyeti. İşaretlenirse CAPEX’e %20 KDV eklenmez.',
+  loanSharePct:'Yatırımın ne kadarının krediyle finanse edileceği. Borç payı yükseldikçe aylık taksit ve risk artar.',
+  loanRatePct:'Yıllık faiz. Ziraat Bankası genç çiftçi / kadın üretici kredisinde %100 faiz indirimi (0) mümkündür.',
+  loanYears:'Kredi vadesi. Uzun vade taksiti düşürür, toplam faizi artırır.',
+  laborCount:'Kaç kişi çalıştırılacağı. Kendi emeğiniz ücret almayacaksa 0 girin; model o zaman daha iyimser bir geri ödeme gösterir.',
+  employerCostMonth:'Bir çalışanın işverene aylık toplam maliyeti: brüt ücret + SGK + işsizlik + vergiler. Net asgari ücretten yaklaşık %50 fazladır.',
+  packagingTLkg:'Ambalaj, etiket ve kutu maliyeti. Mikroyeşillikte şeffaf kap ve etiket marka algısını da belirler.',
+  logisticsTLkg:'Soğuk zincir / teslimat maliyeti. Şehir içi kısa mesafe avantajdır; ürün bozulmadan teslim edilmelidir.',
+  marketingPct:'Cironun yüzdesi olarak pazarlama. Restoran kanalında satış görüşmesi, numune ve içerik bu kalemden çıkar.',
+  maintPct:'CAPEX’in yıllık bakım yüzdesi. Pompa, nozul, filtre ve LED yenileme burada.',
+  insurancePct:'CAPEX’in yıllık sigorta yüzdesi. Su baskını ve elektrik arızası küçük tesisleri hızla bitirir.',
+  otherFixedMonth:'Muhasebe, yazılım, abonelik, ulaşım gibi diğer sabit giderler.',
+  tariffT1:'T1 puant (17:00–22:00) elektrik fiyatı. Faturanızdaki vergi ve dağıtım bedeli dahil değeri girin.',
+  tariffT2:'T2 gündüz (08:00–17:00) elektrik fiyatı.',
+  tariffT3:'T3 gece (22:00–08:00) elektrik fiyatı. Işığı buraya kaydırmak en hızlı tasarruftur.',
+  priceEscPct:'5 yıllık projeksiyonda satış fiyatının yıllık artışı. Enflasyon altında kalırsa marj erir.',
+  costInfPct:'Maliyetlerin yıllık artışı. Fiyat artışından yüksekse ölçek büyütmek zararı büyütür.',
+  rampPct:'İlk yıl satış rampası. Yeni işletme ilk günden tam kapasite satamaz; bu oran ilk yıl gelirini düşürür.',
+  taxPct:'Kurumlar vergisi oranı. Yalnızca pozitif vergi öncesi kâr üzerinden alınır.',
+  usdTry:'Dolar kuru; $/kWh ve $/kg karşılaştırmaları için kullanılır.',
+  'capexRates.structure':'Raf, taşıyıcı, tepsi ve oda içi inşaat. Yatak metrekare başına.',
+  'capexRates.lighting':'LED bar, sürücü ve montaj. Işık gücü arttıkça bu kalem de artar.',
+  'capexRates.hvac':'Klima, nem alma, havalandırma ve su soğutucu (chiller).',
+  'capexRates.irrigation':'Pompa, tank, boru, nozul ve besin dozaj sistemi.',
+  'capexRates.automation':'Sensör, PLC, uzaktan izleme ve otomasyon.',
+  'capexRates.other':'Yedek parça, ilk stok, kurulum ve beklenmeyen giderler.'
+};
+
 const FIELD_MAP = {};
 GROUPS.forEach(g => g.fields.forEach(f => { FIELD_MAP[f.k] = f; }));
 const idOf = k => k.replace(/\./g,'-');
 const TABS = [
   ['sim','Simülasyon'],['ozet','Özet'],['fizik','Işık & iklim'],['enerji','Enerji'],['ekonomi','Ekonomi'],
-  ['risk','Risk'],['kiyas','Kıyaslama'],['notlar','Model notları']
+  ['risk','Risk'],['kiyas','Kıyaslama'],['rehber','Rehber'],['notlar','Model notları']
 ];
 
 /* ============================================================
@@ -1281,25 +1537,36 @@ function optionsHTML(f){
   return (f.options ? f.options() : []).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
 }
 
+function infoBtn(k){
+  return HELP[k] ? `<button type="button" class="info" data-help="${k}" aria-label="Açıklama" aria-expanded="false">i</button>` : '';
+}
+function helpDiv(k, id){
+  return HELP[k] ? `<div class="help" id="h-${id}" hidden>${HELP[k]}</div>` : '';
+}
 function fieldHTML(f){
   const id = idOf(f.k);
   if (f.type === 'select'){
     return `<div class="field">
-      <div class="field-head"><label for="s-${id}">${f.label}</label></div>
+      <div class="field-head"><label for="s-${id}">${f.label}${infoBtn(f.k)}</label></div>
       <select id="s-${id}" data-key="${f.k}" ${f.numeric?'data-numeric="1"':''}>${optionsHTML(f)}</select>
       ${f.hint?`<div class="hint">${f.hint}</div>`:''}
+      ${helpDiv(f.k,id)}
     </div>`;
   }
   if (f.type === 'check'){
-    return `<label class="chk"><input type="checkbox" data-key="${f.k}" id="c-${id}"> ${f.label}</label>`;
+    return `<div class="field">
+      <label class="chk"><input type="checkbox" data-key="${f.k}" id="c-${id}"> ${f.label}${infoBtn(f.k)}</label>
+      ${helpDiv(f.k,id)}
+    </div>`;
   }
   return `<div class="field">
-    <div class="field-head"><label for="n-${id}">${f.label}</label><span class="unit">${f.unit||''}</span></div>
+    <div class="field-head"><label for="n-${id}">${f.label}${infoBtn(f.k)}</label><span class="unit">${f.unit||''}</span></div>
     <div class="field-ctl">
       <input type="range" id="r-${id}" data-key="${f.k}" aria-label="${f.label}" min="${f.min}" max="${f.max}" step="${f.step}">
       <input type="number" id="n-${id}" data-key="${f.k}" aria-label="${f.label}" min="${f.min}" max="${f.max}" step="${f.step}">
     </div>
     ${f.hint?`<div class="hint">${f.hint}</div>`:''}
+    ${helpDiv(f.k,id)}
   </div>`;
 }
 
@@ -1722,6 +1989,13 @@ function renderSim(m){
   if (!panel) return;
   if (!panel.dataset.built){
     panel.innerHTML = `
+      <div class="intro" id="sim-intro" hidden>
+        <div><b>Yeni misiniz?</b> “Oynat”a basın: her saniye bir gün. Soldaki parametreler sahneye ve sayılara anında işler. Bir rafa tıklayın; Rehber’de her terim sıfırdan anlatılır.</div>
+        <div class="acts">
+          <button class="btn" data-act="intro-guide">Rehber</button>
+          <button class="btn btn-quiet" data-act="intro-close">Anladım</button>
+        </div>
+      </div>
       <div class="sim-wrap">
         <div class="sim-stage" id="sim-stage">
           <div id="sim-canvas-wrap" style="position:absolute;inset:0"></div>
@@ -1764,6 +2038,12 @@ function renderSim(m){
         </aside>
       </div>`;
     panel.dataset.built = '1';
+    const intro = document.getElementById('sim-intro');
+    if (intro){
+      let seen = false;
+      try { seen = localStorage.getItem('dt-intro') === '1'; } catch(e){}
+      intro.hidden = seen;
+    }
   }
   updateSimUI();
   if (window.DT3D){
@@ -1822,6 +2102,7 @@ function render(){
   renderEkonomi(m);
   renderRisk(m);
   renderCompare();
+  renderRehber();
   renderNotlar();
   const sel = $('preset');
   if (sel) sel.value = PRESETS[state.preset] ? state.preset : 'custom';
@@ -1962,6 +2243,16 @@ function bindEvents(){
     else if (t.type === 'checkbox') setStateKey(key, t.checked, 'checkbox');
   });
 
+  groups.addEventListener('click', e=>{
+    const b = e.target.closest('.info');
+    if (!b) return;
+    e.preventDefault();
+    const h = document.getElementById('h-'+idOf(b.dataset.help));
+    if (!h) return;
+    h.hidden = !h.hidden;
+    b.setAttribute('aria-expanded', String(!h.hidden));
+  });
+
   $('tabs').addEventListener('click', e=>{
     const b = e.target.closest('button[data-tab]');
     if (b) switchTab(b.dataset.tab);
@@ -2006,6 +2297,17 @@ function bindEvents(){
     if (act === 'pick-close'){
       const p = document.getElementById('sim-pick');
       if (p) p.hidden = true;
+    }
+    if (act === 'intro-close'){
+      const i = document.getElementById('sim-intro');
+      if (i) i.hidden = true;
+      try { localStorage.setItem('dt-intro','1'); } catch(e){}
+    }
+    if (act === 'intro-guide'){
+      const i = document.getElementById('sim-intro');
+      if (i) i.hidden = true;
+      try { localStorage.setItem('dt-intro','1'); } catch(e){}
+      switchTab('rehber');
     }
   });
 }
