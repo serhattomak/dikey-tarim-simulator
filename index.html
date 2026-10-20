@@ -398,6 +398,26 @@ const CROPS = {
   strawberry: {name:'Çilek',                cycle:60, yield:1.4, price:190, seed:450, water:14, dli:17, dliMax:26, vpd:[0.80,1.30], temp:22, tray:500, category:'fruit', difficulty:'Zor', note:'Yüksek DLI, uzun döngü, yüksek risk.', market:'Pastane, otel ve premium market. Soğuk zincir ve hasat işçiliği gerekir.'}
 };
 
+/* Tohum maliyeti: 1020 tepsi = 0,125 m². Tepsi başına gram × tohum TL/kg ÷ 0,125.
+   Kaynak: tohum tedarikçisi çuval fiyatı (2026 tahmini). Kullanıcı yine de TL/m² alanını ezebilir. */
+const SEED_INFO = {
+  radish:     {cost:100, basis:'22 g/tepsi × 550 ₺/kg'},
+  sunflower:  {cost:70,  basis:'70 g/tepsi × 120 ₺/kg'},
+  pea:        {cost:90,  basis:'110 g/tepsi × 100 ₺/kg'},
+  broccoli:   {cost:190, basis:'10 g/tepsi × 2.400 ₺/kg'},
+  cress:      {cost:40,  basis:'14 g/tepsi × 320 ₺/kg'},
+  lettuce:    {cost:90,  basis:'25 fide/m² × ~3,6 ₺ (kendi fideliği)'},
+  arugula:    {cost:12,  basis:'10 g/m² × 500 ₺/kg'},
+  spinach:    {cost:15,  basis:'25 g/m² × 400 ₺/kg'},
+  basil:      {cost:12,  basis:'3 g/m² × 2.000 ₺/kg'},
+  mint:       {cost:25,  basis:'çelik/ayrık kök, fide amortismanı'},
+  parsley:    {cost:10,  basis:'5 g/m² × 800 ₺/kg'},
+  cilantro:   {cost:12,  basis:'8 g/m² × 600 ₺/kg'},
+  dill:       {cost:10,  basis:'5 g/m² × 700 ₺/kg'},
+  strawberry: {cost:60,  basis:'8 fide/m², 2 yıla yayılmış'}
+};
+Object.entries(SEED_INFO).forEach(([k,v])=>{ if (CROPS[k]){ CROPS[k].seed = v.cost; CROPS[k].seedBasis = v.basis; } });
+
 /* Mahsule göre ambalaj ve lojistik (TL/kg). Düşük fiyatlı üründe 27 TL/kg maliyet fiyatı bitirir. */
 const CROP_COSTS = {
   radish:{pack:18, logi:14}, sunflower:{pack:18, logi:14}, pea:{pack:18, logi:14},
@@ -512,7 +532,7 @@ const DEFAULT = {
   preset:'mikro',
   footprintM2:12, tiers:4, rentM2Month:250, city:'istanbul', insulation:1.00,
   crop:'radish', cycleDays:8, yieldKgM2Cycle:2.2, priceTLkg:750, channel:'restoran',
-  demandKgWeek:80, wastePct:8, utilizationPct:85, seedCostM2Cycle:220, nutrientTLkg:8, waterLPerKg:8,
+  demandKgWeek:80, wastePct:8, utilizationPct:85, seedCostM2Cycle:100, nutrientTLkg:8, waterLPerKg:8,
   ppfd:220, photoperiod:16, lightStart:22, ledEfficacy:3.0, dimmerPct:100,
   tempC:22, rhPct:65, waterTempC:20, hvacFactor:0.35,
   system:'nft', pumpKwhDay:2.2,
@@ -1364,6 +1384,7 @@ function renderRehber(){
             <li><b>kg/m²·yıl:</b> alan verimliliği. Mikroyeşillikte 80–100 kg, marulda 40–70 kg tipiktir.</li>
             <li><b>Geri ödeme:</b> net yatırımın kaç ayda geri döndüğü. 24 aydan uzunse iş modelini yeniden düşünün.</li>
           </ul>
+          <p><b>Tohum maliyeti:</b> tüm alan için değil, aynı anda ekilen tepsi sayısı için hesaplanır. 100 m² yatak ≈ 800 adet 1020 tepsi demektir. Bir tepsiye 22 g turp tohumu gidiyorsa döngü başına ~17,6 kg tohum kullanılır. Mahsul profilinde “gramaj × tohum fiyatı → tepsi başı maliyet” olarak görünür; toplu çuval alımı tepsi maliyetini %80-90 düşürür.</p>
           <p><b>Kanal seçimi:</b> restoran/şef en yüksek fiyatı verir ama haftalık istikrar ister. Perakende hacim getirir, raf ömrü ister. Toptan fiyatı yarıya indirir. Online/abonelik en iyi marjı verebilir ama paketleme ve teslimat yükü sizde.</p>
           <p><b>Türkiye araçları:</b> KKYDP’de kapalı dikey tarım için dekar kısıtı yok; IPARD III’te inşaat ve ekipmanda KDV muafiyeti var; Ziraat Bankası genç çiftçi kredisinde %100 faiz indirimi mümkün. Oranlar dönemseldir, resmî rehberden doğrulayın.</p>
           <p><b>Evde üretim:</b> kendi emeğinizle çalışıyorsanız “Kendi emeğim (ücret yok)” kutusunu işaretleyin; işçilik gideri sıfırlanır. Model yine de haftalık kaç saat gerektiğini gösterir (ör. 6 m² oda için ~20 saat/hafta). Bu saatleri yok saymayın; başka bir işte kazandığınız para fırsat maliyetidir.</p>
@@ -1503,7 +1524,7 @@ const GROUPS = [
     {k:'demandKgWeek', label:'Haftalık talep', min:1, max:5000, step:5, unit:'kg/hafta', hint:'Alıcı sözleşmeniz kadar. Üretim bunu aşarsa satılamaz.'},
     {k:'wastePct', label:'Fire', min:0, max:40, step:1, unit:'%'},
     {k:'utilizationPct', label:'Kapasite kullanımı', min:30, max:100, step:1, unit:'%'},
-    {k:'seedCostM2Cycle', label:'Tohum / fide', min:0, max:1500, step:10, unit:'₺/m²·döngü'},
+    {k:'seedCostM2Cycle', label:'Tohum / fide', min:0, max:1500, step:5, unit:'₺/m²·döngü', hint:'1020 tepsi = 0,125 m²; gramaj × tohum fiyatı'},
     {k:'nutrientTLkg', label:'Gübre ve su', min:0, max:80, step:1, unit:'₺/kg'},
     {k:'waterLPerKg', label:'Su tüketimi', min:1, max:60, step:1, unit:'L/kg'}
   ]},
@@ -1573,7 +1594,7 @@ const HELP = {
   demandKgWeek:'Haftada gerçekten satabileceğiniz kg. Model üretimi taleple sınırlar; satılamayan ürün gelir üretmez. Off-take sözleşmesi bu sayının temelidir.',
   wastePct:'Hasat, paketleme, nakliye ve iade kaybı. Mikroyeşillikte %5–10 normaldir; uzun raf ömrü olmayan üründe daha yüksek.',
   utilizationPct:'Tepsilerin ne kadarının dolu olduğu. Boş bekleyen raf, ödenen kira ve işçiliği boşa harcar.',
-  seedCostM2Cycle:'Tohum veya fide maliyeti. Mikroyeşillikte toplu alım (25 lb çuval) tepsi başı maliyeti %90’a kadar düşürebilir.',
+  seedCostM2Cycle:'Bir 1020 tepsi 0,125 m²’dir; m² başına maliyet tepsi gramajı × tohum TL/kg ÷ 0,125 ile çıkar. 100 m² yatak = 800 tepsi; tutarın büyük görünmesi normaldir, tüm alan aynı anda ekilir. Toplu çuval alımı tepsi maliyetini %80-90 düşürür.',
   nutrientTLkg:'Gübre ve su maliyeti (üretilen kg başına). HPA gibi sistemlerde su azalır; EC takibi maliyeti kontrol eder.',
   waterLPerKg:'1 kg ürün için harcanan su. HPA’da yaklaşık %40 daha az; NFT/DWC’de daha yüksek.',
   ppfd:'Bitkiye ulaşan ışık yoğunluğu (µmol/m²/s). Artırmak hem büyümeyi hem elektrik tüketimini artırır.',
@@ -1969,8 +1990,10 @@ function renderFizik(m){
           <tr><td>Döngü</td><td class="r">${nf(state.cycleDays,0)} gün</td></tr>
           <tr><td>Verim</td><td class="r">${nf(state.yieldKgM2Cycle,1)} kg/m²·döngü</td></tr>
           <tr><td>Tepsi başı ürün</td><td class="r">${nf(crop.tray,0)} g</td></tr>
+          <tr><td>Tohum / fide</td><td class="r">${fmtTL(state.seedCostM2Cycle)}/m²·döngü</td></tr>
           <tr><td>Su ihtiyacı</td><td class="r">${nf(state.waterLPerKg*(m.sys.waterMul||1),0)} L/kg</td></tr>
         </tbody></table>
+        <div class="hint" style="margin-top:6px">Tohum hesabı: ${crop.seedBasis||'—'} → tepsi başı ~${fmtTL(state.seedCostM2Cycle*0.125,1)}</div>
         <p class="lead" style="margin-top:9px">${crop.note}</p>
         <p class="hint" style="margin-top:6px"><strong>Pazar:</strong> ${crop.market}</p>
       </div>
