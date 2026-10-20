@@ -27,7 +27,7 @@
   ::selection{background:#dcead9}
   :focus-visible{outline:2px solid var(--green);outline-offset:2px}
   .num{font-variant-numeric:tabular-nums}
-  .wrap{max-width:1420px;margin:0 auto;padding:0 20px}
+  .wrap{width:100%;padding:0 24px}
 
   /* header */
   .top{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
@@ -65,7 +65,7 @@
   .tabs button[aria-selected="true"]{color:var(--green);border-bottom-color:var(--green);font-weight:600}
 
   /* workspace */
-  .workspace{display:grid;grid-template-columns:336px minmax(0,1fr);gap:18px;align-items:start;padding-top:16px;padding-bottom:40px}
+  .workspace{display:grid;grid-template-columns:318px minmax(0,1fr);gap:18px;align-items:start;padding-top:16px;padding-bottom:40px}
   .sidebar{position:sticky;top:78px;max-height:calc(100vh - 96px);overflow-y:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:#d6d0c0 transparent}
   .sidebar::-webkit-scrollbar{width:7px}
   .sidebar::-webkit-scrollbar-track{background:transparent}
@@ -203,8 +203,8 @@
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* simulation */
-  .sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:14px;align-items:start}
-  .sim-stage{position:relative;height:min(60vh,560px);min-height:420px;border-radius:14px;overflow:hidden;background:#171a15;border:1px solid #262b23}
+  .sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+  .sim-stage{position:relative;height:clamp(440px,64vh,780px);min-height:420px;border-radius:14px;overflow:hidden;background:#171a15;border:1px solid #262b23}
   .sim-stage canvas{display:block;width:100%;height:100%}
   .sim-hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none;max-width:calc(100% - 24px)}
   .sim-chip{background:rgba(18,22,17,.78);border:1px solid rgba(255,255,255,.13);color:#e8eee2;padding:6px 9px;border-radius:8px;font-size:11px;line-height:1.25}
@@ -267,7 +267,7 @@
 
   @media (max-width:1180px){
     .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .workspace{grid-template-columns:300px minmax(0,1fr)}
+    .workspace{grid-template-columns:290px minmax(0,1fr)}
     .grid2{grid-template-columns:minmax(0,1fr)}
     .grid3{grid-template-columns:minmax(0,1fr)}
     .vpd-grid{grid-template-columns:minmax(0,1fr)}
@@ -285,6 +285,7 @@
     .main{scroll-margin-top:64px}
   }
   @media (max-width:620px){
+    .wrap{padding:0 14px}
     .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
     .kpi-value{font-size:17px}
     .brand h1{font-size:17px}
@@ -402,24 +403,91 @@ const SYSTEMS = {
   hpa:    {name:'HPA (yüksek basınç)',pump:3.2, outage:20, yieldMul:1.08, capexMul:1.35, waterMul:0.60, labor:1.15}
 };
 
-const CITIES = {
-  istanbul:  {name:'İstanbul',  climate:1.00, ipard:false},
-  ankara:    {name:'Ankara',    climate:0.95, ipard:false},
-  izmir:     {name:'İzmir',     climate:1.05, ipard:false},
-  bursa:     {name:'Bursa',     climate:1.00, ipard:false},
-  antalya:   {name:'Antalya',   climate:1.22, ipard:false},
-  konya:     {name:'Konya',     climate:1.08, ipard:true},
-  kayseri:   {name:'Kayseri',   climate:1.05, ipard:true},
-  samsun:    {name:'Samsun',    climate:1.00, ipard:true},
-  trabzon:   {name:'Trabzon',   climate:0.98, ipard:true},
-  erzurum:   {name:'Erzurum',   climate:1.32, ipard:true},
-  sanliurfa: {name:'Şanlıurfa', climate:1.34, ipard:true},
-  gaziantep: {name:'Gaziantep', climate:1.20, ipard:true},
-  mersin:    {name:'Mersin',    climate:1.24, ipard:true},
-  adana:     {name:'Adana',     climate:1.28, ipard:true},
-  tekirdag:  {name:'Tekirdağ',  climate:0.95, ipard:true},
-  mugla:     {name:'Muğla',     climate:1.10, ipard:false}
-};
+/* 81 il · iklim katsayısı temsili HVAC yükü çarpanı, ipard: TKDK IPARD III 42 il listesi */
+const CITY_ROWS = [
+  ['adana','Adana',1.28,false],
+  ['adiyaman','Adıyaman',1.26,false],
+  ['afyonkarahisar','Afyonkarahisar',1.05,true],
+  ['agri','Ağrı',1.35,true],
+  ['aksaray','Aksaray',1.10,true],
+  ['amasya','Amasya',1.00,true],
+  ['ankara','Ankara',0.95,true],
+  ['antalya','Antalya',1.22,false],
+  ['ardahan','Ardahan',1.38,true],
+  ['artvin','Artvin',0.98,false],
+  ['aydin','Aydın',1.10,true],
+  ['balikesir','Balıkesir',1.00,true],
+  ['bartin','Bartın',0.98,false],
+  ['batman','Batman',1.30,false],
+  ['bayburt','Bayburt',1.30,false],
+  ['bilecik','Bilecik',1.00,false],
+  ['bingol','Bingöl',1.28,false],
+  ['bitlis','Bitlis',1.30,false],
+  ['bolu','Bolu',1.00,false],
+  ['burdur','Burdur',1.08,true],
+  ['bursa','Bursa',1.00,true],
+  ['canakkale','Çanakkale',0.98,true],
+  ['cankiri','Çankırı',1.08,true],
+  ['corum','Çorum',1.02,true],
+  ['denizli','Denizli',1.08,true],
+  ['diyarbakir','Diyarbakır',1.30,true],
+  ['duzce','Düzce',0.98,false],
+  ['edirne','Edirne',0.95,false],
+  ['elazig','Elazığ',1.22,true],
+  ['erzincan','Erzincan',1.25,true],
+  ['erzurum','Erzurum',1.32,true],
+  ['eskisehir','Eskişehir',1.02,false],
+  ['gaziantep','Gaziantep',1.22,false],
+  ['giresun','Giresun',0.98,true],
+  ['gumushane','Gümüşhane',1.10,false],
+  ['hakkari','Hakkari',1.30,false],
+  ['hatay','Hatay',1.24,true],
+  ['igdir','Iğdır',1.28,false],
+  ['isparta','Isparta',1.08,true],
+  ['istanbul','İstanbul',1.00,false],
+  ['izmir','İzmir',1.05,false],
+  ['kahramanmaras','Kahramanmaraş',1.20,true],
+  ['karabuk','Karabük',1.02,false],
+  ['karaman','Karaman',1.10,true],
+  ['kars','Kars',1.35,true],
+  ['kastamonu','Kastamonu',1.02,true],
+  ['kayseri','Kayseri',1.05,true],
+  ['kirikkale','Kırıkkale',1.05,false],
+  ['kirklareli','Kırklareli',0.95,false],
+  ['kirsehir','Kırşehir',1.08,false],
+  ['kilis','Kilis',1.24,false],
+  ['kocaeli','Kocaeli',0.98,false],
+  ['konya','Konya',1.08,false],
+  ['kutahya','Kütahya',1.05,true],
+  ['malatya','Malatya',1.18,true],
+  ['manisa','Manisa',1.06,true],
+  ['mardin','Mardin',1.28,true],
+  ['mersin','Mersin',1.24,true],
+  ['mugla','Muğla',1.10,false],
+  ['mus','Muş',1.30,true],
+  ['nevsehir','Nevşehir',1.10,true],
+  ['nigde','Niğde',1.10,false],
+  ['ordu','Ordu',0.98,true],
+  ['osmaniye','Osmaniye',1.24,false],
+  ['rize','Rize',0.98,false],
+  ['sakarya','Sakarya',0.98,false],
+  ['samsun','Samsun',1.00,true],
+  ['siirt','Siirt',1.28,false],
+  ['sinop','Sinop',0.98,false],
+  ['sivas','Sivas',1.15,true],
+  ['sanliurfa','Şanlıurfa',1.34,true],
+  ['sirnak','Şırnak',1.30,false],
+  ['tekirdag','Tekirdağ',0.95,false],
+  ['tokat','Tokat',1.05,true],
+  ['trabzon','Trabzon',0.98,true],
+  ['tunceli','Tunceli',1.22,false],
+  ['usak','Uşak',1.06,true],
+  ['van','Van',1.28,true],
+  ['yalova','Yalova',0.98,false],
+  ['yozgat','Yozgat',1.10,true],
+  ['zonguldak','Zonguldak',0.98,false]
+];
+const CITIES = Object.fromEntries(CITY_ROWS.map(([k,ad,climate,ipard]) => [k,{name:ad,climate,ipard}]));
 
 const DEFAULT = {
   preset:'mikro',
@@ -1398,7 +1466,7 @@ const GROUPS = [
     {k:'footprintM2', label:'Taban alanı (oda)', min:1, max:600, step:1, unit:'m²'},
     {k:'tiers', label:'Raf katı', min:1, max:12, step:1, unit:'kat'},
     {k:'rentM2Month', label:'Kira', min:0, max:1500, step:10, unit:'₺/m²·ay', hint:'Kendi mülkünüzse 0'},
-    {k:'city', type:'select', label:'İl', options:()=>Object.entries(CITIES).map(([k,v])=>[k,v.name]), hint:'İklim katsayısı HVAC yükünü etkiler'},
+    {k:'city', type:'select', label:'İl', options:()=>Object.entries(CITIES).map(([k,v])=>[k,v.name]), hint:'81 il · iklim katsayısı HVAC yükünü etkiler'},
     {k:'insulation', label:'Yalıtım katsayısı', min:0.6, max:1.6, step:0.05, unit:'×', hint:'İyi yalıtım 0.7 · zayıf oda 1.4'}
   ]},
   {id:'uretim', title:'Mahsul ve üretim', open:true, fields:[
