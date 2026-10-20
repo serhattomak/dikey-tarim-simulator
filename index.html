@@ -557,11 +557,11 @@ const DEFAULT = {
 
 const PRESETS = {
   ev: {
-    label:'Ev odası · kendi emeğin · 30 tepsi/hafta',
-    s:{footprintM2:2, tiers:3, rentM2Month:0, selfLabor:true, laborCount:0, demandKgWeek:10,
-       ppfd:200, photoperiod:16, lightStart:22, system:'dwc', pumpKwhDay:0.8,
+    label:'Kârlı başlangıç · 6 m² oda · 2 kat',
+    s:{footprintM2:6, tiers:2, rentM2Month:0, selfLabor:true, laborCount:0, demandKgWeek:20,
+       ppfd:200, photoperiod:16, lightStart:22, system:'dwc', pumpKwhDay:1.2,
        capexRates:{structure:1500, lighting:2400, hvac:600, irrigation:800, automation:200, other:400},
-       otherFixedMonth:500, marketingPct:2}
+       otherFixedMonth:800, marketingPct:2}
   },
   mikro: {
     label:'Mikro-ticari · 12 m² oda · 1 çalışan',
@@ -875,18 +875,41 @@ function cropDefaults(s, key){
   return s;
 }
 
-function applyPreset(key){
+function stateForPreset(key){
   const p = PRESETS[key];
-  state = deep(DEFAULT);
-  cropDefaults(state, p.s.crop || 'radish');
+  const s = deep(DEFAULT);
+  cropDefaults(s, p.s.crop || 'radish');
   const merged = Object.assign({}, p.s);
   delete merged.crop;
-  Object.assign(state, merged);
-  state.preset = key;
-  state.autoLabor = simpleMode;
+  Object.assign(s, merged);
+  s.preset = key;
+  s.autoLabor = simpleMode;
+  return s;
+}
+
+function applyPreset(key){
+  state = stateForPreset(key);
   syncInputs();
   render();
   persist();
+}
+
+function applyFix(kind, value){
+  if (kind === 'price') state.priceTLkg = Math.max(1, Math.round(+value));
+  else if (kind === 'yield') state.yieldKgM2Cycle = Math.max(0.1, Math.round(+value*10)/10);
+  else if (kind === 'demand') state.demandKgWeek = Math.max(1, Math.ceil(+value));
+  else if (kind === 'tariff'){
+    const f = Math.max(0, +value);
+    state.tariffT1 = +(state.tariffT1*f).toFixed(2);
+    state.tariffT2 = +(state.tariffT2*f).toFixed(2);
+    state.tariffT3 = +(state.tariffT3*f).toFixed(2);
+  }
+  else if (kind === 'self'){ state.selfLabor = true; state.laborCount = 0; }
+  else if (kind === 'channel') state.channel = value;
+  else if (kind === 'crop') cropDefaults(state, value);
+  else if (kind === 'preset'){ applyPreset(value); return; }
+  syncInputs(); render(); schedulePersist();
+  toast('Hedef uygulandı');
 }
 
 /* ============================================================
@@ -1413,8 +1436,9 @@ function renderRehber(){
           <p><b>Tohum maliyeti:</b> tüm alan için değil, aynı anda ekilen tepsi sayısı için hesaplanır. 100 m² yatak ≈ 800 adet 1020 tepsi demektir. Bir tepsiye 22 g turp tohumu gidiyorsa döngü başına ~17,6 kg tohum kullanılır. Mahsul profilinde “gramaj × tohum fiyatı → tepsi başı maliyet” olarak görünür; toplu çuval alımı tepsi maliyetini %80-90 düşürür.</p>
           <p><b>Kanal seçimi:</b> restoran/şef en yüksek fiyatı verir ama haftalık istikrar ister. Perakende hacim getirir, raf ömrü ister. Toptan fiyatı yarıya indirir. Online/abonelik en iyi marjı verebilir ama paketleme ve teslimat yükü sizde.</p>
           <p><b>Türkiye araçları:</b> KKYDP’de kapalı dikey tarım için dekar kısıtı yok; IPARD III’te inşaat ve ekipmanda KDV muafiyeti var; Ziraat Bankası genç çiftçi kredisinde %100 faiz indirimi mümkün. Oranlar dönemseldir, resmî rehberden doğrulayın.</p>
-          <p><b>Evde üretim:</b> kendi emeğinizle çalışıyorsanız “Kendi emeğim (ücret yok)” kutusunu işaretleyin; işçilik gideri sıfırlanır. Model yine de haftalık kaç saat gerektiğini gösterir (ör. 6 m² oda için ~20 saat/hafta). Bu saatleri yok saymayın; başka bir işte kazandığınız para fırsat maliyetidir.</p>
-          <p><b>Zarar ediyorsanız:</b> Özet sekmesindeki “Zarar teşhisi” kartı en büyük üç gideri ve üç müdahaleyi gösterir. Tek tek uygulayın; hangi kalemin ne kazandırdığını görün.</p>
+          <p><b>Evde üretim:</b> kendi emeğinizle çalışıyorsanız “Kendi emeğim (ücret yok)” kutusunu işaretleyin; işçilik gideri sıfırlanır. Model yine de haftalık kaç saat gerektiğini gösterir (6 m² oda + 2 kat ≈ 13 saat/hafta). Bu saatleri yok saymayın; başka bir işte kazandığınız para fırsat maliyetidir.</p>
+          <p><b>Kâra geçmek için:</b> Özet sekmesindeki “Kâra geçiş planı” kartı, %10 net marj için fiyatın, verimin, talebin ve elektriğin hangi seviyeye gelmesi gerektiğini tek tek gösterir. “Uygula” ile hedefi deneyin; tutmuyorsa aynı odada daha kârlı mahsul listesine veya hazır kârlı senaryolara geçin.</p>
+          <p><b>Hazır kârlı senaryolar:</b> üstteki Senaryo menüsünde “Kârlı başlangıç · 6 m² oda · 2 kat”, “Mikro-ticari · 12 m²” ve “Ticari mikroyeşillik · 60 m²” var. Marul odası bilinçli olarak zorlu; enerji ve işçilik marjı yiyor.</p>
           <p><b>Altın kural:</b> tek oda pozitif birim ekonomiye geçmeden ikinci odaya yatırım yapmayın.</p>
         </div>
       </details>
@@ -1823,22 +1847,91 @@ function renderKpis(m){
    ============================================================ */
 function lossCard(m){
   const alt = patch => compute(Object.assign(deep(state), patch));
-  const rows = [];
-  if (!state.selfLabor) rows.push(['Kendi emeğin (işçilik 0)', alt({selfLabor:true}), 'fix-labor']);
-  if (state.lightStart !== 22) rows.push(['Işığı 22:00’ye al', alt({lightStart:22}), 'fix-night']);
-  if (state.ledEfficacy < 3.4) rows.push(['LED verimini 3.4 yap', alt({ledEfficacy:3.4}), 'fix-led']);
-  const all = alt({selfLabor:true, lightStart:22, ledEfficacy:Math.max(state.ledEfficacy,3.4)});
+  const goal = r => r.netProfit - 0.10*r.revenue;
+  function solve(patchFn, lo, hi, inc){
+    const f = v => goal(compute(Object.assign(deep(state), patchFn(v))));
+    if (inc){
+      if (f(hi) < 0) return null;
+      if (f(lo) >= 0) return lo;
+      for (let i=0;i<16;i++){ const mid=(lo+hi)/2; if (f(mid)>=0) hi=mid; else lo=mid; }
+      return hi;
+    }
+    if (f(lo) < 0) return null;
+    if (f(hi) >= 0) return hi;
+    for (let i=0;i<16;i++){ const mid=(lo+hi)/2; if (f(mid)>=0) lo=mid; else hi=mid; }
+    return lo;
+  }
+  const btn = (fix,val,label='Uygula') => `<button class="btn" data-fix="${fix}" data-value="${val}" style="padding:3px 7px;font-size:10.5px">${label}</button>`;
+  const priceNeed = solve(v=>({priceTLkg:v}), 1, 5000, true);
+  const yieldNeed = solve(v=>({yieldKgM2Cycle:v}), 0.1, 20, true);
+  const demandNeed = m.unsoldKg > 0.5 ? solve(v=>({demandKgWeek:v}), 1, 5000, true) : null;
+  const tariffScale = solve(v=>({tariffT1:state.tariffT1*v, tariffT2:state.tariffT2*v, tariffT3:state.tariffT3*v}), 0, 1, false);
+  const selfNet = state.selfLabor ? null : alt({selfLabor:true});
+  const restNet = state.channel === 'restoran' ? null : alt({channel:'restoran'});
+
+  const tRows = [];
+  if (priceNeed !== null){
+    const p = Math.ceil(priceNeed);
+    tRows.push(['Fiyat (ref.)', fmtTL(state.priceTLkg)+'/kg', fmtTL(p)+'/kg', '+'+nf((p/state.priceTLkg-1)*100,0)+'%', btn('price',p)]);
+  } else {
+    tRows.push(['Fiyat (ref.)', fmtTL(state.priceTLkg)+'/kg', '—', 'fiyatla olmaz', '']);
+  }
+  if (yieldNeed !== null){
+    const y = Math.ceil(yieldNeed*10)/10;
+    tRows.push(['Verim', nf(state.yieldKgM2Cycle,1)+' kg/m²', nf(y,1)+' kg/m²', '+'+nf((y/state.yieldKgM2Cycle-1)*100,0)+'%', btn('yield',y)]);
+  } else {
+    tRows.push(['Verim', nf(state.yieldKgM2Cycle,1)+' kg/m²', '20 kg/m²', 'tek başına yetmez', '']);
+  }
+  if (m.unsoldKg > 0.5){
+    if (demandNeed !== null){
+      const d = Math.ceil(demandNeed);
+      tRows.push(['Talep', nf(state.demandKgWeek,0)+' kg/hf', nf(d,0)+' kg/hf', '+'+nf((d/state.demandKgWeek-1)*100,0)+'%', btn('demand',d)]);
+    } else {
+      tRows.push(['Talep', nf(state.demandKgWeek,0)+' kg/hf', nf(m.netProdKg/52,0)+' kg/hf', 'tamamı satılsa bile yetmez', '']);
+    }
+  }
+  if (tariffScale !== null && tariffScale < 0.999){
+    const avg = m.tariffAvg*tariffScale;
+    tRows.push(['Elektrik', nf(m.tariffAvg,2)+' ₺', nf(avg,2)+' ₺', nf((tariffScale-1)*100,0)+'%', btn('tariff', Math.floor(tariffScale*100)/100)]);
+  } else if (tariffScale === null){
+    tRows.push(['Elektrik', nf(m.tariffAvg,2)+' ₺', '0 ₺', 'bedava olsa bile yetmez', '']);
+  }
+  if (selfNet){
+    tRows.push(['İşçilik', 'ücretli', 'kendi emeğin · '+fmtTL(selfNet.netProfit/12)+'/ay', selfNet.netProfit<0?'yetmez':'', btn('self','1')]);
+  }
+  if (restNet && restNet.netProfit > m.netProfit){
+    tRows.push(['Kanal', CHANNELS[state.channel].name, 'Restoran · '+fmtTL(restNet.netProfit/12)+'/ay', '', btn('channel','restoran')]);
+  }
+
   const top = m.opexItems.slice().sort((a,b)=>b[1]-a[1]).slice(0,3);
   const costRows = top.map(([label,val])=>
     `<tr><td>${label}</td><td class="r">${m.revenue>0?fmtPct(val/m.revenue,0):'—'}</td><td class="r">${fmtCompact(val)}/yıl</td></tr>`
   ).join('');
-  const fixRows = rows.map(([label,x,act])=>
-    `<tr><td>${label}</td><td class="r ${x.netProfit<0?'neg-text':'pos-text'}">${fmtTL(x.netProfit/12)}/ay</td>
-      <td class="r"><button class="btn" data-act="${act}" style="padding:3px 7px;font-size:10.5px">Uygula</button></td></tr>`
-  ).join('');
+
+  const rank = Object.keys(CROPS).filter(k=>k!==state.crop).map(k=>{
+    const x = deep(state); cropDefaults(x, k); const r = compute(x);
+    return {k, name:CROPS[k].name, diff:CROPS[k].difficulty, net:r.netProfit/12};
+  }).sort((a,b)=>b.net-a.net).slice(0,3);
+  const rankRows = rank.map(r=>`<tr>
+    <td>${r.name}</td>
+    <td>${badge(r.diff, r.diff==='Kolay'?'green':r.diff==='Orta'?'amber':'red')}</td>
+    <td class="r ${r.net<0?'neg-text':'pos-text'}">${fmtTL(r.net)}/ay</td>
+    <td class="r">${btn('crop', r.k, 'Seç')}</td>
+  </tr>`).join('');
+
+  const presets = ['ev','mikro','ticari'].map(k=>{
+    const x = stateForPreset(k); const r = compute(x);
+    return {k, label:PRESETS[k].label, net:r.netProfit/12};
+  });
+  const presetRows = presets.map(p=>`<tr>
+    <td>${p.label}</td>
+    <td class="r ${p.net<0?'neg-text':'pos-text'}">${fmtTL(p.net)}/ay</td>
+    <td class="r">${btn('preset', p.k, 'Aç')}</td>
+  </tr>`).join('');
+
   return `<div class="card" style="border-color:#e8c4bd">
-    <div class="card-head"><h3>Zarar teşhisi · neden kâra geçmiyor?</h3>
-      <span class="sub">başabaş fiyat ${fmtTL(m.breakEvenPrice)}/kg · şu an ${fmtTL(m.price)}/kg</span></div>
+    <div class="card-head"><h3>Kâra geçiş planı · hedef %10 net marj</h3>
+      <span class="sub">başabaş ref. ${fmtTL(m.breakEvenPrice)}/kg · efektif ${fmtTL(m.price)}/kg</span></div>
     <div class="grid2">
       <div>
         <table class="tbl"><thead><tr><th>En büyük gider</th><th class="r">Ciroya oranı</th><th class="r">Yıllık</th></tr></thead>
@@ -1846,14 +1939,20 @@ function lossCard(m){
         <p class="hint" style="margin-top:8px">Giderler cironun üzerindeyse sorun fiyat, verim veya kWh/kg’dir; ölçek büyütmek zararı büyütür.</p>
       </div>
       <div>
-        <table class="tbl"><thead><tr><th>Müdahale</th><th class="r">Sonuç</th><th></th></tr></thead><tbody>
-          <tr><td>Mevcut durum</td><td class="r neg-text">${fmtTL(m.netProfit/12)}/ay</td><td></td></tr>
-          ${fixRows}
-          <tr class="total"><td>Üçü birlikte</td><td class="r ${all.netProfit<0?'neg-text':'pos-text'}">${fmtTL(all.netProfit/12)}/ay</td><td class="r"><button class="btn" data-act="fix-all" style="padding:3px 7px;font-size:10.5px">Hepsini uygula</button></td></tr>
-        </tbody></table>
-        <p class="hint" style="margin-top:8px">${all.netProfit<0
-          ? 'Üçü de yetmiyorsa mahsul, fiyat veya alanı değiştirin. Bu senaryo yapısal olarak zor.'
-          : 'Bu üç adım senaryoyu kâra yaklaştırıyor. Yine de talebi ve fiyatı sözleşmeyle doğrulayın.'}</p>
+        <table class="tbl"><thead><tr><th>Değişken</th><th class="r">Şu an</th><th class="r">Hedef</th><th class="r">Fark</th><th></th></tr></thead>
+        <tbody>${tRows.length ? tRows.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td></tr>`).join('')
+          : `<tr><td colspan="5" class="hint">Tek bir değişken %10 marjı getirmiyor. Aşağıdaki mahsul veya hazır senaryoya bakın.</td></tr>`}</tbody></table>
+        <p class="hint" style="margin-top:8px">${priceNeed !== null && priceNeed > state.priceTLkg*2 ? '<span class="warn-text">Fiyat hedefi pazarın çok üzerinde; mahsul değiştirmek daha gerçekçi.</span> ' : ''}${rank[0] && rank[0].net > m.netProfit/12 ? (rank[0].net > 0 ? 'Aynı odada en hızlı çıkış: ' : 'Aynı odada en az zarar: ')+rank[0].name+' ('+fmtTL(rank[0].net)+'/ay).' : 'Hedefler tek başına %10 net marj içindir; pazar fiyatını sözleşmeyle doğrulayın.'}</p>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px">
+        <div class="card-head"><h3>Aynı odada daha kârlı mahsuller</h3><span class="sub">aynı alan, talep ve kanal</span></div>
+        <table class="tbl"><tbody>${rankRows}</tbody></table>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px">
+        <div class="card-head"><h3>Hazır kârlı senaryolar</h3><span class="sub">sıfırdan kurulmuş</span></div>
+        <table class="tbl"><tbody>${presetRows}</tbody></table>
       </div>
     </div>
   </div>`;
@@ -1944,7 +2043,7 @@ function renderOzet(m){
         ${alerts}
       </div>
     </div>
-    ${m.netProfit < 0 ? lossCard(m) : ''}
+    ${m.netProfit < 0 && activeTab === 'ozet' ? lossCard(m) : ''}
     <div class="card">
       <div class="card-head"><h3>Türkiye koşulları</h3><span class="sub">${m.city.name} · 2026 varsayımları</span></div>
       <div class="unit-grid four">
@@ -2132,7 +2231,7 @@ function stepDay(){
     addLog(`Ekim tamam. Haftalık kapasite ~${nf(m.traysWeek,0)} tepsi.`);
     if (m.kwhPerKg > 12) addLog(`Uyarı: enerji yoğunluğu ${nf(m.kwhPerKg,1)} kWh/kg. Hedef 8’in altı.`, 'warn');
     if (state.waterTempC > 22) addLog(`Uyarı: su ${nf(state.waterTempC,0)} °C. Pythium eşiği 22 °C.`, 'warn');
-    if (m.netProfit < 0) addLog('Uyarı: senaryo zarar ediyor. Özet sekmesindeki “Zarar teşhisi” kartına bak.', 'warn');
+    if (m.netProfit < 0) addLog('Uyarı: senaryo zarar ediyor. Özet sekmesindeki “Kâra geçiş planı” kartına bak.', 'warn');
   }
   if (SIM.day % 30 === 0){
     addLog(`30 gün özeti: net kâr ${fmtCompact(SIM.cash)}, hasat ${nf(SIM.harvestKg,0)} kg.`, 'info');
@@ -2496,6 +2595,8 @@ function bindEvents(){
   document.addEventListener('click', e=>{
     const mb = e.target.closest('[data-mode]');
     if (mb) setMode(mb.dataset.mode);
+    const fx = e.target.closest('[data-fix]');
+    if (fx) applyFix(fx.dataset.fix, fx.dataset.value);
   });
 
   $('tabs').addEventListener('click', e=>{
