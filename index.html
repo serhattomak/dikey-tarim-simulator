@@ -2159,7 +2159,7 @@ function renderSim(m){
           <div class="card">
             <div class="card-head"><h3>Koşu</h3><span class="sub" id="sim-state">hazır</span></div>
             <div class="meter"><i id="sim-progress" style="width:0%"></i></div>
-            <div class="hint" style="margin:6px 0 8px">120 gün · sahne 5 kata kadar gösterir</div>
+            <div class="hint" style="margin:6px 0 8px">120 gün · sahne tüm katları gösterir (12’ye kadar)</div>
             <table class="tbl"><tbody id="sim-totals"></tbody></table>
           </div>
           <div class="card">
@@ -2496,16 +2496,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
   let renderer, scene, camera, controls, container, farm, raycaster;
   let ready=false, day=0, sig='', lastT=0, fanMesh=null, camTween=null;
-  let trayGroups=[], pickables=[];
+  let trayGroups=[], pickables=[], room=null, farmHeight=2.6, lastRoomH=0;
   const pointer = new THREE.Vector2();
   const geoCache = {}, matCache = {};
   const COL = {floor:0x2b2f26, wall:0x30342c, frame:0x454c41, shelf:0x565f50, tray:0x3a4036};
-
-  const CAMS = {
-    wide:[[4.6,3.4,7.2],[0,1.3,0]],
-    rack:[[2.6,1.7,3.8],[0,1.4,0]],
-    top:[[0.3,8.2,2.6],[0,0.9,0]]
-  };
 
   function mat(color, opts){
     const k = color+'|'+JSON.stringify(opts||{});
@@ -2598,7 +2592,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     farm = new THREE.Group(); scene.add(farm);
     trayGroups = []; pickables = [];
     const racks = Math.max(2, Math.min(4, Math.ceil(st.footprintM2/5)));
-    const tiers = Math.max(1, Math.min(5, st.tiers));
+    const tiers = Math.max(1, Math.min(12, Math.round(st.tiers)));
     const W=1.95, D=0.9, gap=0.42, total=racks*W+(racks-1)*gap;
     const tierH=0.54, baseH=0.42;
     const cycle = Math.max(1, Math.round(st.cycleDays));
@@ -2631,7 +2625,31 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
       }
       farm.add(rk); pickables.push(rk);
     }
+    const rackH = baseH + tiers*tierH;
+    farmHeight = rackH;
+    const H = Math.max(3.6, rackH + 0.55);
+    resizeRoom(H);
+    controls.maxDistance = Math.max(19, rackH*2.4);
+    if (Math.abs(H - lastRoomH) > 0.01){
+      lastRoomH = H;
+      cameraTo('wide');
+    }
     setDay(day);
+  }
+
+  function resizeRoom(H){
+    if (!room) return;
+    const H2 = Math.max(3.6, H);
+    room.H = H2;
+    room.back.scale.y = H2/3.6;
+    room.back.position.y = H2/2;
+    room.left.scale.y = H2/3.6;
+    room.left.position.y = H2/2;
+    room.ceil.position.y = H2;
+    if (scene && scene.fog){
+      scene.fog.near = 14 + H2*1.1;
+      scene.fog.far = 30 + H2*3.0;
+    }
   }
 
   function setDay(d){
@@ -2669,12 +2687,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     const floor = box(11,0.1,7.5, mat(COL.floor), 0,-0.05,0);
     floor.receiveShadow = true;
     scene.add(floor);
-    scene.add(box(11,3.6,0.1, mat(COL.wall), 0,1.8,-3.75));
-    scene.add(box(0.1,3.6,7.5, mat(COL.wall), -5.5,1.8,0));
+    const back = box(11,3.6,0.1, mat(COL.wall), 0,1.8,-3.75);
+    const left = box(0.1,3.6,7.5, mat(COL.wall), -5.5,1.8,0);
+    scene.add(back); scene.add(left);
     const ceil = new THREE.Mesh(new THREE.PlaneGeometry(11,7.5), new THREE.MeshStandardMaterial({color:0x2c302a, side:THREE.BackSide, roughness:.95}));
     ceil.rotation.x = Math.PI/2;
     ceil.position.set(0,3.6,0);
     scene.add(ceil);
+    room = {back, left, ceil, H:3.6};
     const grid = new THREE.GridHelper(11,22,0x353b31,0x2b3028);
     grid.position.y = 0.004;
     grid.material.opacity = 0.25;
@@ -2723,12 +2743,23 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
   }
 
   function cameraTo(name){
-    const c = CAMS[name];
-    if (!c) return;
+    const h = farmHeight;
+    const H = room ? room.H : 3.6;
+    let p, t;
+    if (name === 'rack'){
+      p = [2.6, h*0.55+0.4, 3.8+h*0.25];
+      t = [0, h*0.55, 0];
+    } else if (name === 'top'){
+      p = [0.3, H+2.6, 3.0];
+      t = [0, 0.9, 0];
+    } else {
+      p = [4.6, h*0.55+1.7, 7.2+Math.max(0,h-2.6)*0.85];
+      t = [0, h*0.52, 0];
+    }
     camTween = {
       t:0,
-      fromP:camera.position.clone(), toP:new THREE.Vector3(c[0][0],c[0][1],c[0][2]),
-      fromT:controls.target.clone(), toT:new THREE.Vector3(c[1][0],c[1][1],c[1][2])
+      fromP:camera.position.clone(), toP:new THREE.Vector3(p[0],p[1],p[2]),
+      fromT:controls.target.clone(), toT:new THREE.Vector3(t[0],t[1],t[2])
     };
   }
 
@@ -2738,7 +2769,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     const st = DT().getState(), m = DT().compute(), crop = DT().CROPS[st.crop];
     el.innerHTML = `<button data-act="pick-close" aria-label="Kapat">×</button>
       <b>Raf ${n} · ${crop.name}</b>
-      ${Math.min(5,st.tiers)} kat · 3 tepsi/kat<br>
+      ${st.tiers} kat · 3 tepsi/kat<br>
       Haftalık kapasite ~${nf(m.traysWeek,0)} tepsi<br>
       ${nf(m.kgM2Year,1)} kg/m²·yıl · ${nf(m.kwhPerKg,1)} kWh/kg`;
     el.hidden = false;
