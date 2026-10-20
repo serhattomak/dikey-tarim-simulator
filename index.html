@@ -387,15 +387,24 @@ const CROPS = {
   pea:        {name:'Bezelye filizi',       cycle:12, yield:3.4, price:560, seed:300, water:9,  dli:10, dliMax:19, vpd:[0.65,1.20], temp:20, tray:350, category:'micro', difficulty:'Kolay', note:'En yüksek biyokütle; 12 gün döngü.', market:'Restoran, sushi ve vegan menüler. Hacim satışına uygun.'},
   broccoli:   {name:'Brokoli mikroyeşillik',cycle:10, yield:2.0, price:950, seed:420, water:8,  dli:11, dliMax:19, vpd:[0.65,1.20], temp:21, tray:240, category:'micro', difficulty:'Orta', note:'En yüksek birim fiyat; sülforafan hikâyesi.', market:'Wellness ve premium restoran. Fiyat yüksek, talep niş.'},
   cress:      {name:'Tere',                 cycle:10, yield:1.8, price:380, seed:150, water:8,  dli:10, dliMax:18, vpd:[0.65,1.20], temp:20, tray:140, category:'micro', difficulty:'Kolay', note:'10 günde hasat; en düşük tohum maliyeti.', market:'Manav, restoran ve kahvaltı noktaları. Hızlı ama düşük gramaj.'},
-  lettuce:    {name:'Marul (yapraklı)',     cycle:35, yield:5.6, price:60,  seed:160, water:15, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:400, category:'leafy', difficulty:'Kolay', note:'Hacim ürünü; düşük marj, yüksek elektrik.', market:'Market ve hal. Fiyat düşük; ancak hacim büyük.'},
-  arugula:    {name:'Roka',                 cycle:21, yield:3.0, price:200, seed:230, water:11, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:170, category:'leafy', difficulty:'Kolay', note:'21 günde hasat; restoranlarda hızlı tüketim.', market:'Restoran, manav, paket salata. Fiyatı marula göre 3 kat.'},
-  spinach:    {name:'Ispanak',              cycle:30, yield:3.4, price:110, seed:200, water:13, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:200, category:'leafy', difficulty:'Orta', note:'Hacim ürünü; toptan fiyatı düşük.', market:'Market ve toptan. Tek başına marj zor; karışık sepetle satılmalı.'},
+  lettuce:    {name:'Marul (yapraklı)',     cycle:35, yield:5.6, price:60,  seed:90,  water:15, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:400, category:'leafy', difficulty:'Kolay', note:'Hacim ürünü; düşük marj, yüksek elektrik.', market:'Market ve hal. Fiyat düşük; ancak hacim büyük.'},
+  arugula:    {name:'Roka',                 cycle:21, yield:3.0, price:200, seed:140, water:11, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:170, category:'leafy', difficulty:'Kolay', note:'21 günde hasat; restoranlarda hızlı tüketim.', market:'Restoran, manav, paket salata. Fiyatı marula göre 3 kat.'},
+  spinach:    {name:'Ispanak',              cycle:30, yield:3.4, price:110, seed:120, water:13, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:200, category:'leafy', difficulty:'Orta', note:'Hacim ürünü; toptan fiyatı düşük.', market:'Market ve toptan. Tek başına marj zor; karışık sepetle satılmalı.'},
   basil:      {name:'Fesleğen',             cycle:30, yield:2.6, price:240, seed:210, water:12, dli:13, dliMax:22, vpd:[0.70,1.20], temp:23, tray:180, category:'herb', difficulty:'Orta', note:'Aromatik; restoran kanalı güçlü.', market:'Restoran, pizzacı ve sos üreticisi. Demet veya kutu.'},
   mint:       {name:'Nane',                 cycle:35, yield:2.2, price:180, seed:170, water:12, dli:12, dliMax:20, vpd:[0.70,1.20], temp:22, tray:160, category:'herb', difficulty:'Kolay', note:'Düşük CAPEX, istikrarlı talep.', market:'Çay, içecek ve restoran. Kurutulmuş satış ikinci kanal.'},
   parsley:    {name:'Maydanoz',             cycle:28, yield:2.6, price:130, seed:190, water:12, dli:13, dliMax:21, vpd:[0.70,1.20], temp:22, tray:160, category:'herb', difficulty:'Kolay', note:'Sürekli talep; 28 günde demet.', market:'Manav ve restoran. Haftalık düzenli sipariş alma şansı yüksek.'},
   cilantro:   {name:'Kişniş',               cycle:25, yield:2.2, price:190, seed:210, water:12, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:140, category:'herb', difficulty:'Orta', note:'Niş ama yüksek fiyatlı; hızlı bozulur.', market:'Etnik mutfak, Meksika/Asya restoranları. Soğuk zincir şart.'},
   dill:       {name:'Dereotu',              cycle:24, yield:1.9, price:170, seed:170, water:12, dli:13, dliMax:21, vpd:[0.70,1.20], temp:20, tray:120, category:'herb', difficulty:'Orta', note:'Az gramaj, yüksek fiyat; paketleme kritik.', market:'Restoran ve turşu üreticisi. Küçük paket, yüksek birim fiyat.'},
   strawberry: {name:'Çilek',                cycle:60, yield:1.4, price:190, seed:450, water:14, dli:17, dliMax:26, vpd:[0.80,1.30], temp:22, tray:500, category:'fruit', difficulty:'Zor', note:'Yüksek DLI, uzun döngü, yüksek risk.', market:'Pastane, otel ve premium market. Soğuk zincir ve hasat işçiliği gerekir.'}
+};
+
+/* Mahsule göre ambalaj ve lojistik (TL/kg). Düşük fiyatlı üründe 27 TL/kg maliyet fiyatı bitirir. */
+const CROP_COSTS = {
+  radish:{pack:18, logi:14}, sunflower:{pack:18, logi:14}, pea:{pack:18, logi:14},
+  broccoli:{pack:20, logi:15}, cress:{pack:14, logi:12},
+  lettuce:{pack:6, logi:5}, arugula:{pack:7, logi:6}, spinach:{pack:7, logi:6},
+  basil:{pack:10, logi:8}, mint:{pack:9, logi:7}, parsley:{pack:9, logi:7},
+  cilantro:{pack:10, logi:8}, dill:{pack:10, logi:8}, strawberry:{pack:12, logi:10}
 };
 
 const CHANNELS = {
@@ -509,7 +518,7 @@ const DEFAULT = {
   system:'nft', pumpKwhDay:2.2,
   capexRates:{structure:1200, lighting:2000, hvac:900, irrigation:600, automation:500, other:400},
   capexExtra:0, grantPct:0, vatExempt:false, loanSharePct:0, loanRatePct:0, loanYears:7,
-  laborCount:2, employerCostMonth:34000,
+  laborCount:1, selfLabor:false, employerCostMonth:34000,
   packagingTLkg:15, logisticsTLkg:12, marketingPct:3, maintPct:3, insurancePct:1, otherFixedMonth:2000,
   priceEscPct:25, costInfPct:30, taxPct:25, usdTry:43, rampPct:70,
   tariffT1:7.00, tariffT2:4.60, tariffT3:3.26
@@ -517,31 +526,31 @@ const DEFAULT = {
 
 const PRESETS = {
   ev: {
-    label:'Ev / hobi · 25-30 tepsi/hafta',
-    s:{footprintM2:2, tiers:3, rentM2Month:0, laborCount:0, demandKgWeek:10, otherFixedMonth:500,
+    label:'Ev odası · kendi emeğin · 30 tepsi/hafta',
+    s:{footprintM2:2, tiers:3, rentM2Month:0, selfLabor:true, laborCount:0, demandKgWeek:10,
        ppfd:200, photoperiod:16, lightStart:22, system:'dwc', pumpKwhDay:0.8,
        capexRates:{structure:1500, lighting:2400, hvac:600, irrigation:800, automation:200, other:400},
-       otherFixedMonth:500, packagingTLkg:18, logisticsTLkg:14, marketingPct:2}
+       otherFixedMonth:500, marketingPct:2}
   },
   mikro: {
-    label:'Mikro-ticari · 12 m² oda',
-    s:{footprintM2:12, tiers:4, rentM2Month:250, laborCount:2, demandKgWeek:80,
+    label:'Mikro-ticari · 12 m² oda · 1 çalışan',
+    s:{footprintM2:12, tiers:4, rentM2Month:250, selfLabor:false, laborCount:1, demandKgWeek:60,
        ppfd:220, photoperiod:16, lightStart:22, system:'nft', pumpKwhDay:2.2,
        capexRates:{structure:1200, lighting:2000, hvac:900, irrigation:600, automation:500, other:400}}
   },
   ticari: {
-    label:'Ticari dikey çiftlik · 200 m²',
-    s:{footprintM2:200, tiers:6, crop:'lettuce', rentM2Month:120, laborCount:5, demandKgWeek:900,
-       ppfd:260, photoperiod:18, lightStart:22, system:'nft', pumpKwhDay:18,
-       grantPct:50, loanSharePct:60, loanRatePct:0, vatExempt:true, demandKgWeek:900,
-       capexRates:{structure:1100, lighting:1900, hvac:1000, irrigation:650, automation:800, other:450},
-       otherFixedMonth:20000, marketingPct:2}
+    label:'Ticari mikroyeşillik · 60 m² oda',
+    s:{footprintM2:60, tiers:4, crop:'radish', rentM2Month:120, selfLabor:false, laborCount:3, demandKgWeek:250,
+       ppfd:220, photoperiod:16, lightStart:22, system:'nft', pumpKwhDay:8,
+       grantPct:50, loanSharePct:60, loanRatePct:0, vatExempt:true,
+       capexRates:{structure:2600, lighting:4200, hvac:3000, irrigation:1700, automation:2200, other:1300},
+       otherFixedMonth:12000, marketingPct:2}
   },
   marul: {
-    label:'Marul odası · 40 m², 4 kat',
-    s:{footprintM2:40, tiers:4, crop:'lettuce', rentM2Month:180, laborCount:2, demandKgWeek:250,
-       ppfd:250, photoperiod:17, lightStart:23, system:'nft', pumpKwhDay:4,
-       grantPct:50, loanSharePct:40, loanRatePct:0, vatExempt:true,
+    label:'Marul odası · 40 m² · zorlu senaryo',
+    s:{footprintM2:40, tiers:4, crop:'lettuce', rentM2Month:180, selfLabor:false, laborCount:2, demandKgWeek:250,
+       ppfd:220, photoperiod:16, lightStart:23, system:'nft', pumpKwhDay:4, priceTLkg:70,
+       hvacFactor:0.25, grantPct:50, loanSharePct:40, loanRatePct:0, vatExempt:true,
        capexRates:{structure:1150, lighting:1950, hvac:950, irrigation:620, automation:650, other:420}}
   }
 };
@@ -694,7 +703,7 @@ function compute(s){
   const seedCost = bedM2 * s.seedCostM2Cycle * cycles;
   const nutrientCost = netProdKg * s.nutrientTLkg;
   const rent = s.footprintM2 * s.rentM2Month * 12;
-  const labor = s.laborCount * s.employerCostMonth * 12;
+  const labor = s.selfLabor ? 0 : s.laborCount * s.employerCostMonth * 12;
   const packaging = soldKg * s.packagingTLkg;
   const logistics = soldKg * s.logisticsTLkg;
   const marketing = revenue * (s.marketingPct/100);
@@ -736,6 +745,7 @@ function compute(s){
   const kgM2Year = bedM2 > 0 ? netProdKg / bedM2 : 0;
   const revM2Year = bedM2 > 0 ? revenue / bedM2 : 0;
   const traysWeek = (netProdKg/52) / (crop.tray/1000);
+  const ownerHours = Math.max(2, traysWeek*0.22 + bedM2*0.08);
 
   /* 5 yıllık projeksiyon */
   const years = [];
@@ -797,7 +807,7 @@ function compute(s){
     opexItems, variable, fixed, opexTotal, grossProfit, ebitda,
     interestY1, principalY1, pbt, tax, netProfit, totalCost,
     unitCost, cashCostPerKg, breakEvenPrice, marginPct, laborShare,
-    kgM2Year, revM2Year, traysWeek, years, paybackMonths, roi,
+    kgM2Year, revM2Year, traysWeek, ownerHours, years, paybackMonths, roi,
     risks, riskScore, riskLabel,
     tariffAvg: ep.kwhDay > 0 ? ep.dayCost/ep.kwhDay : 0
   };
@@ -812,12 +822,15 @@ let compareSlots = {A:null, B:null};
 
 function cropDefaults(s, key){
   const c = CROPS[key];
+  const cc = CROP_COSTS[key] || {pack:15, logi:12};
   s.crop = key;
   s.cycleDays = c.cycle;
   s.yieldKgM2Cycle = c.yield;
   s.priceTLkg = c.price;
   s.seedCostM2Cycle = c.seed;
   s.waterLPerKg = c.water;
+  s.packagingTLkg = cc.pack;
+  s.logisticsTLkg = cc.logi;
   return s;
 }
 
@@ -1353,6 +1366,8 @@ function renderRehber(){
           </ul>
           <p><b>Kanal seçimi:</b> restoran/şef en yüksek fiyatı verir ama haftalık istikrar ister. Perakende hacim getirir, raf ömrü ister. Toptan fiyatı yarıya indirir. Online/abonelik en iyi marjı verebilir ama paketleme ve teslimat yükü sizde.</p>
           <p><b>Türkiye araçları:</b> KKYDP’de kapalı dikey tarım için dekar kısıtı yok; IPARD III’te inşaat ve ekipmanda KDV muafiyeti var; Ziraat Bankası genç çiftçi kredisinde %100 faiz indirimi mümkün. Oranlar dönemseldir, resmî rehberden doğrulayın.</p>
+          <p><b>Evde üretim:</b> kendi emeğinizle çalışıyorsanız “Kendi emeğim (ücret yok)” kutusunu işaretleyin; işçilik gideri sıfırlanır. Model yine de haftalık kaç saat gerektiğini gösterir (ör. 6 m² oda için ~20 saat/hafta). Bu saatleri yok saymayın; başka bir işte kazandığınız para fırsat maliyetidir.</p>
+          <p><b>Zarar ediyorsanız:</b> Özet sekmesindeki “Zarar teşhisi” kartı en büyük üç gideri ve üç müdahaleyi gösterir. Tek tek uygulayın; hangi kalemin ne kazandırdığını görün.</p>
           <p><b>Altın kural:</b> tek oda pozitif birim ekonomiye geçmeden ikinci odaya yatırım yapmayın.</p>
         </div>
       </details>
@@ -1522,7 +1537,8 @@ const GROUPS = [
     {k:'loanYears', label:'Vade', min:1, max:10, step:1, unit:'yıl'}
   ]},
   {id:'opex', title:'İşletme giderleri', fields:[
-    {k:'laborCount', label:'Çalışan', min:0, max:30, step:1, unit:'kişi', hint:'Kendi emeğiniz ücretsizse 0'},
+    {k:'selfLabor', type:'check', label:'Kendi emeğim (ücret yok)'},
+    {k:'laborCount', label:'Çalışan', min:0, max:30, step:1, unit:'kişi', hint:'Kendi emeğiniz ücretsizse kutuyu işaretleyin'},
     {k:'employerCostMonth', label:'İşveren maliyeti', min:15000, max:120000, step:500, unit:'₺/kişi·ay', hint:'Net asgari ücret + SGK + vergi karşılığı'},
     {k:'packagingTLkg', label:'Ambalaj', min:0, max:120, step:1, unit:'₺/kg'},
     {k:'logisticsTLkg', label:'Lojistik', min:0, max:120, step:1, unit:'₺/kg'},
@@ -1576,7 +1592,8 @@ const HELP = {
   loanSharePct:'Yatırımın ne kadarının krediyle finanse edileceği. Borç payı yükseldikçe aylık taksit ve risk artar.',
   loanRatePct:'Yıllık faiz. Ziraat Bankası genç çiftçi / kadın üretici kredisinde %100 faiz indirimi (0) mümkündür.',
   loanYears:'Kredi vadesi. Uzun vade taksiti düşürür, toplam faizi artırır.',
-  laborCount:'Kaç kişi çalıştırılacağı. Kendi emeğiniz ücret almayacaksa 0 girin; model o zaman daha iyimser bir geri ödeme gösterir.',
+  selfLabor:'Kendi emeğinizle çalışıyorsanız işçilik maliyeti 0 olur. Model yine de haftalık emek ihtiyacını hesaplar; ücret ödenmediği için geri ödeme iyimser çıkar.',
+  laborCount:'Kaç kişi çalıştırılacağı. Kendi emeğiniz ücretsizse “Kendi emeğim” kutusunu işaretleyin; bu alan devre dışı kalır.',
   employerCostMonth:'Bir çalışanın işverene aylık toplam maliyeti: brüt ücret + SGK + işsizlik + vergiler. Net asgari ücretten yaklaşık %50 fazladır.',
   packagingTLkg:'Ambalaj, etiket ve kutu maliyeti. Mikroyeşillikte şeffaf kap ve etiket marka algısını da belirler.',
   logisticsTLkg:'Soğuk zincir / teslimat maliyeti. Şehir içi kısa mesafe avantajdır; ürün bozulmadan teslim edilmelidir.',
@@ -1715,6 +1732,44 @@ function renderKpis(m){
 /* ============================================================
    PANEL: ÖZET
    ============================================================ */
+function lossCard(m){
+  const alt = patch => compute(Object.assign(deep(state), patch));
+  const rows = [];
+  if (!state.selfLabor) rows.push(['Kendi emeğin (işçilik 0)', alt({selfLabor:true}), 'fix-labor']);
+  if (state.lightStart !== 22) rows.push(['Işığı 22:00’ye al', alt({lightStart:22}), 'fix-night']);
+  if (state.ledEfficacy < 3.4) rows.push(['LED verimini 3.4 yap', alt({ledEfficacy:3.4}), 'fix-led']);
+  const all = alt({selfLabor:true, lightStart:22, ledEfficacy:Math.max(state.ledEfficacy,3.4)});
+  const top = m.opexItems.slice().sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const costRows = top.map(([label,val])=>
+    `<tr><td>${label}</td><td class="r">${m.revenue>0?fmtPct(val/m.revenue,0):'—'}</td><td class="r">${fmtCompact(val)}/yıl</td></tr>`
+  ).join('');
+  const fixRows = rows.map(([label,x,act])=>
+    `<tr><td>${label}</td><td class="r ${x.netProfit<0?'neg-text':'pos-text'}">${fmtTL(x.netProfit/12)}/ay</td>
+      <td class="r"><button class="btn" data-act="${act}" style="padding:3px 7px;font-size:10.5px">Uygula</button></td></tr>`
+  ).join('');
+  return `<div class="card" style="border-color:#e8c4bd">
+    <div class="card-head"><h3>Zarar teşhisi · neden kâra geçmiyor?</h3>
+      <span class="sub">başabaş fiyat ${fmtTL(m.breakEvenPrice)}/kg · şu an ${fmtTL(m.price)}/kg</span></div>
+    <div class="grid2">
+      <div>
+        <table class="tbl"><thead><tr><th>En büyük gider</th><th class="r">Ciroya oranı</th><th class="r">Yıllık</th></tr></thead>
+        <tbody>${costRows}</tbody></table>
+        <p class="hint" style="margin-top:8px">Giderler cironun üzerindeyse sorun fiyat, verim veya kWh/kg’dir; ölçek büyütmek zararı büyütür.</p>
+      </div>
+      <div>
+        <table class="tbl"><thead><tr><th>Müdahale</th><th class="r">Sonuç</th><th></th></tr></thead><tbody>
+          <tr><td>Mevcut durum</td><td class="r neg-text">${fmtTL(m.netProfit/12)}/ay</td><td></td></tr>
+          ${fixRows}
+          <tr class="total"><td>Üçü birlikte</td><td class="r ${all.netProfit<0?'neg-text':'pos-text'}">${fmtTL(all.netProfit/12)}/ay</td><td class="r"><button class="btn" data-act="fix-all" style="padding:3px 7px;font-size:10.5px">Hepsini uygula</button></td></tr>
+        </tbody></table>
+        <p class="hint" style="margin-top:8px">${all.netProfit<0
+          ? 'Üçü de yetmiyorsa mahsul, fiyat veya alanı değiştirin. Bu senaryo yapısal olarak zor.'
+          : 'Bu üç adım senaryoyu kâra yaklaştırıyor. Yine de talebi ve fiyatı sözleşmeyle doğrulayın.'}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderOzet(m){
   const pnl = [
     ['Ciro', m.revenue, 'total'],
@@ -1735,8 +1790,8 @@ function renderOzet(m){
       <td class="r muted">${m.revenue>0?fmtPct(val/m.revenue,1):'—'}</td>
     </tr>`).join('');
 
-  const laborNote = state.laborCount === 0
-    ? `<div class="alert"><span class="dot"></span><div><b>İşçilik modele dahil değil</b><small>Çalışan sayısı 0. Kendi emeğiniz maliyet olarak sayılmıyor; geri ödeme bu yüzden iyimser.</small></div></div>`
+  const laborNote = (state.selfLabor || state.laborCount === 0)
+    ? `<div class="alert"><span class="dot"></span><div><b>Kendi emeğiniz: ~${nf(m.ownerHours,0)} saat/hafta</b><small>Ücret modele dahil değil. Geri ödeme bu yüzden iyimser; uzun vadede kendi saatinizi de maliyet sayın.</small></div></div>`
     : '';
   const alerts = laborNote + (m.risks.length
     ? m.risks.slice().sort((a,b)=>b.p-a.p).map(r=>{
@@ -1786,6 +1841,7 @@ function renderOzet(m){
         ${alerts}
       </div>
     </div>
+    ${m.netProfit < 0 ? lossCard(m) : ''}
     <div class="card">
       <div class="card-head"><h3>Türkiye koşulları</h3><span class="sub">${m.city.name} · 2026 varsayımları</span></div>
       <div class="unit-grid four">
@@ -1971,6 +2027,7 @@ function stepDay(){
     addLog(`Ekim tamam. Haftalık kapasite ~${nf(m.traysWeek,0)} tepsi.`);
     if (m.kwhPerKg > 12) addLog(`Uyarı: enerji yoğunluğu ${nf(m.kwhPerKg,1)} kWh/kg. Hedef 8’in altı.`, 'warn');
     if (state.waterTempC > 22) addLog(`Uyarı: su ${nf(state.waterTempC,0)} °C. Pythium eşiği 22 °C.`, 'warn');
+    if (m.netProfit < 0) addLog('Uyarı: senaryo zarar ediyor. Özet sekmesindeki “Zarar teşhisi” kartına bak.', 'warn');
   }
   if (SIM.day % 30 === 0){
     addLog(`30 gün özeti: kasa ${fmtCompact(SIM.cash)}, hasat ${nf(SIM.harvestKg,0)} kg.`, 'info');
@@ -2386,6 +2443,13 @@ function bindEvents(){
       if (i) i.hidden = true;
       try { localStorage.setItem('dt-intro','1'); } catch(e){}
       switchTab('rehber');
+    }
+    if (act === 'fix-labor' || act === 'fix-night' || act === 'fix-led' || act === 'fix-all'){
+      if (act === 'fix-labor' || act === 'fix-all') state.selfLabor = true;
+      if (act === 'fix-night' || act === 'fix-all') state.lightStart = 22;
+      if (act === 'fix-led' || act === 'fix-all') state.ledEfficacy = Math.max(3.4, state.ledEfficacy);
+      syncInputs(); render(); schedulePersist();
+      toast(act === 'fix-all' ? 'Üç müdahale uygulandı' : 'Müdahale uygulandı');
     }
   });
 }
