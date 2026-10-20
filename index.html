@@ -300,14 +300,20 @@
    VERİ
    ============================================================ */
 const CROPS = {
-  radish:     {name:'Turp mikroyeşillik',   cycle:8,  yield:2.2, price:750, seed:220, water:8,  dli:9,  dliMax:18, vpd:[0.60,1.20], temp:21, tray:260, note:'6-8 gün, en hızlı nakit döngüsü'},
-  sunflower:  {name:'Ayçiçeği filizi',      cycle:10, yield:3.0, price:620, seed:520, water:9,  dli:11, dliMax:20, vpd:[0.65,1.20], temp:22, tray:320, note:'Yüksek tohum maliyeti, güçlü talep'},
-  pea:        {name:'Bezelye filizi',       cycle:12, yield:3.4, price:560, seed:300, water:9,  dli:10, dliMax:19, vpd:[0.65,1.20], temp:20, tray:350, note:'En yüksek biyokütle, 12 gün döngü'},
-  broccoli:   {name:'Brokoli mikroyeşillik',cycle:10, yield:2.0, price:950, seed:420, water:8,  dli:11, dliMax:19, vpd:[0.65,1.20], temp:21, tray:240, note:'En yüksek birim fiyat, sülforafan hikâyesi'},
-  lettuce:    {name:'Marul (yapraklı)',     cycle:35, yield:5.6, price:60,  seed:160, water:15, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:400, note:'Hacim ürünü, düşük marj, yüksek elektrik'},
-  basil:      {name:'Fesleğen',             cycle:30, yield:2.6, price:240, seed:210, water:12, dli:13, dliMax:22, vpd:[0.70,1.20], temp:23, tray:180, note:'Aromatik, restoran kanalı güçlü'},
-  mint:       {name:'Nane',                 cycle:35, yield:2.2, price:180, seed:170, water:12, dli:12, dliMax:20, vpd:[0.70,1.20], temp:22, tray:160, note:'Düşük CAPEX, istikrarlı talep'},
-  strawberry: {name:'Çilek',                cycle:60, yield:1.4, price:190, seed:450, water:14, dli:17, dliMax:26, vpd:[0.80,1.30], temp:22, tray:500, note:'Yüksek DLI, uzun döngü, yüksek risk'}
+  radish:     {name:'Turp mikroyeşillik',   cycle:8,  yield:2.2, price:750, seed:220, water:8,  dli:9,  dliMax:18, vpd:[0.60,1.20], temp:21, tray:260, category:'micro', difficulty:'Kolay', note:'6-8 günde hasat; en hızlı nakit döngüsü.', market:'Restoran, şef ve haftalık abonelik. Yüksek fiyat, küçük hacim.'},
+  sunflower:  {name:'Ayçiçeği filizi',      cycle:10, yield:3.0, price:620, seed:520, water:9,  dli:11, dliMax:20, vpd:[0.65,1.20], temp:22, tray:320, category:'micro', difficulty:'Kolay', note:'Yüksek tohum maliyeti, güçlü talep.', market:'Restoran ve sandviç üreticileri. Tohum maliyeti marjı belirler.'},
+  pea:        {name:'Bezelye filizi',       cycle:12, yield:3.4, price:560, seed:300, water:9,  dli:10, dliMax:19, vpd:[0.65,1.20], temp:20, tray:350, category:'micro', difficulty:'Kolay', note:'En yüksek biyokütle; 12 gün döngü.', market:'Restoran, sushi ve vegan menüler. Hacim satışına uygun.'},
+  broccoli:   {name:'Brokoli mikroyeşillik',cycle:10, yield:2.0, price:950, seed:420, water:8,  dli:11, dliMax:19, vpd:[0.65,1.20], temp:21, tray:240, category:'micro', difficulty:'Orta', note:'En yüksek birim fiyat; sülforafan hikâyesi.', market:'Wellness ve premium restoran. Fiyat yüksek, talep niş.'},
+  cress:      {name:'Tere',                 cycle:10, yield:1.8, price:380, seed:150, water:8,  dli:10, dliMax:18, vpd:[0.65,1.20], temp:20, tray:140, category:'micro', difficulty:'Kolay', note:'10 günde hasat; en düşük tohum maliyeti.', market:'Manav, restoran ve kahvaltı noktaları. Hızlı ama düşük gramaj.'},
+  lettuce:    {name:'Marul (yapraklı)',     cycle:35, yield:5.6, price:60,  seed:160, water:15, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:400, category:'leafy', difficulty:'Kolay', note:'Hacim ürünü; düşük marj, yüksek elektrik.', market:'Market ve hal. Fiyat düşük; ancak hacim büyük.'},
+  arugula:    {name:'Roka',                 cycle:21, yield:3.0, price:200, seed:230, water:11, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:170, category:'leafy', difficulty:'Kolay', note:'21 günde hasat; restoranlarda hızlı tüketim.', market:'Restoran, manav, paket salata. Fiyatı marula göre 3 kat.'},
+  spinach:    {name:'Ispanak',              cycle:30, yield:3.4, price:110, seed:200, water:13, dli:14, dliMax:22, vpd:[0.70,1.20], temp:20, tray:200, category:'leafy', difficulty:'Orta', note:'Hacim ürünü; toptan fiyatı düşük.', market:'Market ve toptan. Tek başına marj zor; karışık sepetle satılmalı.'},
+  basil:      {name:'Fesleğen',             cycle:30, yield:2.6, price:240, seed:210, water:12, dli:13, dliMax:22, vpd:[0.70,1.20], temp:23, tray:180, category:'herb', difficulty:'Orta', note:'Aromatik; restoran kanalı güçlü.', market:'Restoran, pizzacı ve sos üreticisi. Demet veya kutu.'},
+  mint:       {name:'Nane',                 cycle:35, yield:2.2, price:180, seed:170, water:12, dli:12, dliMax:20, vpd:[0.70,1.20], temp:22, tray:160, category:'herb', difficulty:'Kolay', note:'Düşük CAPEX, istikrarlı talep.', market:'Çay, içecek ve restoran. Kurutulmuş satış ikinci kanal.'},
+  parsley:    {name:'Maydanoz',             cycle:28, yield:2.6, price:130, seed:190, water:12, dli:13, dliMax:21, vpd:[0.70,1.20], temp:22, tray:160, category:'herb', difficulty:'Kolay', note:'Sürekli talep; 28 günde demet.', market:'Manav ve restoran. Haftalık düzenli sipariş alma şansı yüksek.'},
+  cilantro:   {name:'Kişniş',               cycle:25, yield:2.2, price:190, seed:210, water:12, dli:14, dliMax:22, vpd:[0.70,1.20], temp:21, tray:140, category:'herb', difficulty:'Orta', note:'Niş ama yüksek fiyatlı; hızlı bozulur.', market:'Etnik mutfak, Meksika/Asya restoranları. Soğuk zincir şart.'},
+  dill:       {name:'Dereotu',              cycle:24, yield:1.9, price:170, seed:170, water:12, dli:13, dliMax:21, vpd:[0.70,1.20], temp:20, tray:120, category:'herb', difficulty:'Orta', note:'Az gramaj, yüksek fiyat; paketleme kritik.', market:'Restoran ve turşu üreticisi. Küçük paket, yüksek birim fiyat.'},
+  strawberry: {name:'Çilek',                cycle:60, yield:1.4, price:190, seed:450, water:14, dli:17, dliMax:26, vpd:[0.80,1.30], temp:22, tray:500, category:'fruit', difficulty:'Zor', note:'Yüksek DLI, uzun döngü, yüksek risk.', market:'Pastane, otel ve premium market. Soğuk zincir ve hasat işçiliği gerekir.'}
 };
 
 const CHANNELS = {
@@ -1158,7 +1164,7 @@ const GROUPS = [
     {k:'insulation', label:'Yalıtım katsayısı', min:0.6, max:1.6, step:0.05, unit:'×', hint:'İyi yalıtım 0.7 · zayıf oda 1.4'}
   ]},
   {id:'uretim', title:'Mahsul ve üretim', open:true, fields:[
-    {k:'crop', type:'select', label:'Mahsul', options:()=>Object.entries(CROPS).map(([k,v])=>[k,v.name])},
+    {k:'crop', type:'select', label:'Mahsul', options:()=>Object.entries(CROPS).map(([k,v])=>[k,v.name+' · '+v.difficulty])},
     {k:'cycleDays', label:'Döngü süresi', min:4, max:120, step:1, unit:'gün', hint:'Değiştirince mahsul varsayılanından ayrılır'},
     {k:'yieldKgM2Cycle', label:'Verim', min:0.2, max:12, step:0.1, unit:'kg/m²·döngü'},
     {k:'priceTLkg', label:'Referans satış fiyatı', min:5, max:2500, step:5, unit:'₺/kg'},
@@ -1518,13 +1524,15 @@ function renderFizik(m){
     </div>
     <div class="grid2">
       <div class="card">
-        <div class="card-head"><h3>Mahsul referansı</h3></div>
+        <div class="card-head"><h3>${crop.name}</h3>${badge(crop.difficulty, crop.difficulty==='Kolay'?'green':crop.difficulty==='Orta'?'amber':'red')}</div>
         <table class="tbl"><tbody>
           <tr><td>Döngü</td><td class="r">${nf(state.cycleDays,0)} gün</td></tr>
           <tr><td>Verim</td><td class="r">${nf(state.yieldKgM2Cycle,1)} kg/m²·döngü</td></tr>
           <tr><td>Tepsi başı ürün</td><td class="r">${nf(crop.tray,0)} g</td></tr>
           <tr><td>Su ihtiyacı</td><td class="r">${nf(state.waterLPerKg*(m.sys.waterMul||1),0)} L/kg</td></tr>
         </tbody></table>
+        <p class="lead" style="margin-top:9px">${crop.note}</p>
+        <p class="hint" style="margin-top:6px"><strong>Pazar:</strong> ${crop.market}</p>
       </div>
       <div class="card">
         <div class="card-head"><h3>Kök bölgesi güvenliği</h3>${badge(state.waterTempC>22?'Pythium riski':'Güvenli aralık', state.waterTempC>22?'red':'green')}</div>
